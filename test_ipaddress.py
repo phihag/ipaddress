@@ -1687,6 +1687,7 @@ if not hasattr(BaseTestCase, 'assertRaisesRegex'):
             return True
 
     BaseTestCase.assertRaisesRegex = _AssertRaisesRegex
+    IpaddrUnitTest.assertRaisesRegex = _AssertRaisesRegex
 
 
 if __name__ == '__main__':
