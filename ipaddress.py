@@ -26,20 +26,22 @@ except NameError:
     _compat_str = str
     assert bytes != str
 try:
-    _compat_int_from_bytes = int.from_bytes
+    _compat_int_from_byte_vals = int.from_bytes
 except AttributeError:
-    _compat_int_from_bytes = lambda cls,byt: int(byt.encode('hex'), 16)
+    def _compat_int_from_byte_vals(bytvals, endianess):
+        assert endianess == 'big'
+        res = 0
+        for bv in bytvals:
+            assert isinstance(bv, _compat_int_types)
+            res = (res << 8) + bv
+        return res
 def _compat_to_bytes(intval, length, endianess):
+    assert isinstance(intval, _compat_int_types)
     assert endianess == 'big'
     if length == 4:
-        res = struct.pack('!I', intval)
-        return res
+        return struct.pack('!I', intval)
     elif length == 16:
-        res = struct.pack('!QQ', intval >> 64, intval & 0xffffffffffffffff)
-        correct = intval.to_bytes(length, endianess)
-        assert correct[:8] == res[:8]
-        assert correct[8:] == res[8:]
-        return res
+        return struct.pack('!QQ', intval >> 64, intval & 0xffffffffffffffff)
     else:
         raise NotImplementedError()
 
@@ -187,7 +189,7 @@ def v6_int_to_packed(address):
 
 def _split_optional_netmask(address):
     """Helper to split the netmask and raise AddressValueError if needed"""
-    addr = str(address).split('/')
+    addr = _compat_str(address).split('/')
     if len(addr) > 2:
         raise AddressValueError("Only one '/' permitted in %r" % address)
     return addr
@@ -463,7 +465,7 @@ class _IPAddressBase(_TotalOrderingMixin):
     @property
     def compressed(self):
         """Return the shorthand version of the IP address as a string."""
-        return str(self)
+        return _compat_str(self)
 
     @property
     def version(self):
@@ -539,7 +541,7 @@ class _BaseAddress(_IPAddressBase):
 
     def __init__(self, address):
         if (not isinstance(address, bytes)
-            and '/' in str(address)):
+            and '/' in _compat_str(address)):
             raise AddressValueError("Unexpected '/' in %r" % address)
 
     def __int__(self):
@@ -576,10 +578,10 @@ class _BaseAddress(_IPAddressBase):
         return self.__class__(int(self) - other)
 
     def __repr__(self):
-        return '%s(%r)' % (self.__class__.__name__, str(self))
+        return '%s(%r)' % (self.__class__.__name__, _compat_str(self))
 
     def __str__(self):
-        return str(self._string_from_ip_int(self._ip))
+        return _compat_str(self._string_from_ip_int(self._ip))
 
     def __hash__(self):
         return hash(hex(int(self._ip)))
@@ -600,7 +602,7 @@ class _BaseNetwork(_IPAddressBase):
         self._cache = {}
 
     def __repr__(self):
-        return '%s(%r)' % (self.__class__.__name__, str(self))
+        return '%s(%r)' % (self.__class__.__name__, _compat_str(self))
 
     def __str__(self):
         return '%s/%d' % (self.network_address, self.prefixlen)
@@ -1057,7 +1059,7 @@ class _BaseV4(object):
         self._max_prefixlen = IPV4LENGTH
 
     def _explode_shorthand_ip_string(self):
-        return str(self)
+        return _compat_str(self)
 
     def _ip_int_from_string(self, ip_str):
         """Turn the given IP string into an integer for comparison.
@@ -1080,7 +1082,7 @@ class _BaseV4(object):
             raise AddressValueError("Expected 4 octets in %r" % ip_str)
 
         try:
-            return _compat_int_from_bytes(map(self._parse_octet, octets), 'big')
+            return _compat_int_from_byte_vals(map(self._parse_octet, octets), 'big')
         except ValueError as exc:
             raise AddressValueError("%s in %r" % (exc, ip_str))
 
@@ -1130,7 +1132,9 @@ class _BaseV4(object):
             The IP address as a string in dotted decimal notation.
 
         """
-        return '.'.join(map(str, _compat_to_bytes(ip_int, 4, 'big')))
+        return u'.'.join(_compat_str(
+                            struct.unpack('!B', b)[0] if isinstance(b, bytes) else b)
+                         for b in _compat_to_bytes(ip_int, 4, 'big'))
 
     def _is_valid_netmask(self, netmask):
         """Verify that the netmask is valid.
@@ -1225,7 +1229,7 @@ class IPv4Address(_BaseV4, _BaseAddress):
         # Constructing from a packed address
         if isinstance(address, bytes):
             self._check_packed_address(address, 4)
-            self._ip = _compat_int_from_bytes(address, 'big')
+            self._ip = _compat_int_from_byte_vals(address, 'big')
             return
 
         # Assume input argument to be string or any object representation
@@ -1725,11 +1729,11 @@ class _BaseV6(object):
 
         """
         if isinstance(self, IPv6Network):
-            ip_str = str(self.network_address)
+            ip_str = _compat_str(self.network_address)
         elif isinstance(self, IPv6Interface):
-            ip_str = str(self.ip)
+            ip_str = _compat_str(self.ip)
         else:
-            ip_str = str(self)
+            ip_str = _compat_str(self)
 
         ip_int = self._ip_int_from_string(ip_str)
         hex_str = '%032x' % ip_int
@@ -1780,7 +1784,7 @@ class IPv6Address(_BaseV6, _BaseAddress):
         # Constructing from a packed address
         if isinstance(address, bytes):
             self._check_packed_address(address, 16)
-            self._ip = _compat_int_from_bytes(address, 'big')
+            self._ip = _compat_int_from_byte_vals(address, 'big')
             return
 
         # Assume input argument to be string or any object representation
