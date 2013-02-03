@@ -52,9 +52,10 @@ def _compat_to_bytes(intval, length, endianess):
         return struct.pack('!QQ', intval >> 64, intval & 0xffffffffffffffff)
     else:
         raise NotImplementedError()
-try:
-    _compat_bit_length = int.bit_length
-except:
+if hasattr(int, 'bit_length'):
+    # Not int.bit_length , since that won't work in 2.7 where long exists
+    _compat_bit_length = lambda i: i.bit_length()
+else:
     _compat_bit_length = lambda i: len(bin(abs(i))) - 2
 
 

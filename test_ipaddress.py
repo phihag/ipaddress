@@ -585,9 +585,9 @@ class IpaddrUnitTest(unittest.TestCase):
         self.ipv6_network = ipaddress.IPv6Network(u'2001:658:22a:cafe::/64')
 
     def testRepr(self):
-        self.assertTrue(re.match(ur"IPv4Interface\(u?'1.2.3.4/32'\)",
+        self.assertTrue(re.match(u"IPv4Interface\(u?'1.2.3.4/32'\)",
                          repr(ipaddress.IPv4Interface(u'1.2.3.4'))))
-        self.assertTrue(re.match(ur"IPv6Interface\(u?'::1/128'\)",
+        self.assertTrue(re.match(u"IPv6Interface\(u?'::1/128'\)",
                          repr(ipaddress.IPv6Interface(u'::1'))))
 
     # issue57
@@ -615,7 +615,7 @@ class IpaddrUnitTest(unittest.TestCase):
             ipaddress.IPv4Address(u'10.10.10.12')])
         self.assertEqual(first, last)
         self.assertEqual(128, ipaddress._count_righthand_zero_bits(0, 128))
-        self.assertTrue(re.match(ur"IPv4Network\(u?'1.2.3.0/24'\)", repr(self.ipv4_network)))
+        self.assertTrue(re.match(u"IPv4Network\(u?'1.2.3.0/24'\)", repr(self.ipv4_network)))
 
     def testMissingAddressVersion(self):
         class Broken(ipaddress._BaseAddress):
