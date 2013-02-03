@@ -1688,6 +1688,15 @@ if not hasattr(BaseTestCase, 'assertRaisesRegex'):
 
     BaseTestCase.assertRaisesRegex = _AssertRaisesRegex
     IpaddrUnitTest.assertRaisesRegex = _AssertRaisesRegex
+if not hasattr(BaseTestCase, 'assertIn'):
+    _assertIn = lambda self, o, iterable: self.assertTrue(o in iterable)
+    _assertNotIn = lambda self, o, iterable: self.assertFalse(o in iterable)
+    BaseTestCase.assertIn = _assertIn
+    BaseTestCase.assertNotIn = _assertNotIn
+    IpaddrUnitTest.assertIn = _assertIn
+    IpaddrUnitTest.assertNotIn = _assertNotIn
+    ComparisonTests.assertIn = _assertIn
+    ComparisonTests.assertNotIn = _assertNotIn
 
 
 if __name__ == '__main__':

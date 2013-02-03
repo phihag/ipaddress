@@ -48,6 +48,11 @@ def _compat_to_bytes(intval, length, endianess):
         return struct.pack('!QQ', intval >> 64, intval & 0xffffffffffffffff)
     else:
         raise NotImplementedError()
+try:
+    _compat_bit_length = int.bit_length
+except:
+    _compat_bit_length = lambda i: len(bin(abs(i))) - 2
+
 
 IPV4LENGTH = 32
 IPV6LENGTH = 128
@@ -285,7 +290,7 @@ def summarize_address_range(first, last):
     last_int = last._ip
     while first_int <= last_int:
         nbits = min(_count_righthand_zero_bits(first_int, ip_bits),
-                    (last_int - first_int + 1).bit_length() - 1)
+                    _compat_bit_length(last_int - first_int + 1) - 1)
         net = ip('%s/%d' % (first, ip_bits - nbits))
         yield net
         first_int += 1 << nbits
