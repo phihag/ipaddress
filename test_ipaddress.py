@@ -10,6 +10,16 @@ import operator
 import ipaddress
 
 
+# Compatibility function
+import binascii
+try:
+    _compat_bytes_fromhex = bytes.fromhex
+except AttributeError:
+    def _compat_bytes_fromhex(s):
+        return binascii.unhexlify(s)
+
+
+
 class BaseTestCase(unittest.TestCase):
     # One big change in ipaddress over the original ipaddr module is
     # error reporting that tries to assume users *don't know the rules*
@@ -90,8 +100,8 @@ class CommonTestMixin_v4(CommonTestMixin):
         self.assertInstancesEqual(3232235521, u"192.168.0.1")
 
     def test_packed(self):
-        self.assertInstancesEqual(bytes.fromhex(u"00000000"), u"0.0.0.0")
-        self.assertInstancesEqual(bytes.fromhex(u"c0a80001"), u"192.168.0.1")
+        self.assertInstancesEqual(_compat_bytes_fromhex(u"00000000"), u"0.0.0.0")
+        self.assertInstancesEqual(_compat_bytes_fromhex(u"c0a80001"), u"192.168.0.1")
 
     def test_negative_ints_rejected(self):
         msg = "-1 (< 0) is not permitted as an IPv4 address"
@@ -124,11 +134,11 @@ class CommonTestMixin_v6(CommonTestMixin):
         self.assertInstancesEqual(3232235521, u"::c0a8:1")
 
     def test_packed(self):
-        addr = bytes(12) + bytes.fromhex(u"00000000")
+        addr = bytes(12) + _compat_bytes_fromhex(u"00000000")
         self.assertInstancesEqual(addr, u"::")
-        addr = bytes(12) + bytes.fromhex("c0a80001")
+        addr = bytes(12) + _compat_bytes_fromhex("c0a80001")
         self.assertInstancesEqual(addr, u"::c0a8:1")
-        addr = bytes.fromhex("c0a80001") + bytes(12)
+        addr = _compat_bytes_fromhex("c0a80001") + bytes(12)
         self.assertInstancesEqual(addr, "c0a8:1::")
 
     def test_negative_ints_rejected(self):

@@ -1251,7 +1251,7 @@ class IPv4Address(_BaseV4, _BaseAddress):
              reserved IPv4 Network range.
 
         """
-        reserved_network = IPv4Network('240.0.0.0/4')
+        reserved_network = IPv4Network(u'240.0.0.0/4')
         return self in reserved_network
 
     @property
@@ -1262,9 +1262,9 @@ class IPv4Address(_BaseV4, _BaseAddress):
             A boolean, True if the address is reserved per RFC 1918.
 
         """
-        private_10 = IPv4Network('10.0.0.0/8')
-        private_172 = IPv4Network('172.16.0.0/12')
-        private_192 = IPv4Network('192.168.0.0/16')
+        private_10 = IPv4Network(u'10.0.0.0/8')
+        private_172 = IPv4Network(u'172.16.0.0/12')
+        private_192 = IPv4Network(u'192.168.0.0/16')
         return (self in private_10 or
                 self in private_172 or
                 self in private_192)
@@ -1278,7 +1278,7 @@ class IPv4Address(_BaseV4, _BaseAddress):
             See RFC 3171 for details.
 
         """
-        multicast_network = IPv4Network('224.0.0.0/4')
+        multicast_network = IPv4Network(u'224.0.0.0/4')
         return self in multicast_network
 
     @property
@@ -1290,7 +1290,7 @@ class IPv4Address(_BaseV4, _BaseAddress):
             RFC 5735 3.
 
         """
-        unspecified_address = IPv4Address('0.0.0.0')
+        unspecified_address = IPv4Address(u'0.0.0.0')
         return self == unspecified_address
 
     @property
@@ -1301,7 +1301,7 @@ class IPv4Address(_BaseV4, _BaseAddress):
             A boolean, True if the address is a loopback per RFC 3330.
 
         """
-        loopback_network = IPv4Network('127.0.0.0/8')
+        loopback_network = IPv4Network(u'127.0.0.0/8')
         return self in loopback_network
 
     @property
@@ -1312,7 +1312,7 @@ class IPv4Address(_BaseV4, _BaseAddress):
             A boolean, True if the address is link-local per RFC 3927.
 
         """
-        linklocal_network = IPv4Network('169.254.0.0/16')
+        linklocal_network = IPv4Network(u'169.254.0.0/16')
         return self in linklocal_network
 
 
@@ -1806,7 +1806,7 @@ class IPv6Address(_BaseV6, _BaseAddress):
             See RFC 2373 2.7 for details.
 
         """
-        multicast_network = IPv6Network('ff00::/8')
+        multicast_network = IPv6Network(u'ff00::/8')
         return self in multicast_network
 
     @property
@@ -1818,14 +1818,14 @@ class IPv6Address(_BaseV6, _BaseAddress):
             reserved IPv6 Network ranges.
 
         """
-        reserved_networks = [IPv6Network('::/8'), IPv6Network('100::/8'),
-                             IPv6Network('200::/7'), IPv6Network('400::/6'),
-                             IPv6Network('800::/5'), IPv6Network('1000::/4'),
-                             IPv6Network('4000::/3'), IPv6Network('6000::/3'),
-                             IPv6Network('8000::/3'), IPv6Network('A000::/3'),
-                             IPv6Network('C000::/3'), IPv6Network('E000::/4'),
-                             IPv6Network('F000::/5'), IPv6Network('F800::/6'),
-                             IPv6Network('FE00::/9')]
+        reserved_networks = [IPv6Network(u'::/8'), IPv6Network(u'100::/8'),
+                             IPv6Network(u'200::/7'), IPv6Network(u'400::/6'),
+                             IPv6Network(u'800::/5'), IPv6Network(u'1000::/4'),
+                             IPv6Network(u'4000::/3'), IPv6Network(u'6000::/3'),
+                             IPv6Network(u'8000::/3'), IPv6Network(u'A000::/3'),
+                             IPv6Network(u'C000::/3'), IPv6Network(u'E000::/4'),
+                             IPv6Network(u'F000::/5'), IPv6Network(u'F800::/6'),
+                             IPv6Network(u'FE00::/9')]
 
         return any(self in x for x in reserved_networks)
 
@@ -1852,7 +1852,7 @@ class IPv6Address(_BaseV6, _BaseAddress):
             A boolean, True if the address is reserved per RFC 3513 2.5.6.
 
         """
-        sitelocal_network = IPv6Network('fec0::/10')
+        sitelocal_network = IPv6Network(u'fec0::/10')
         return self in sitelocal_network
 
     @property
@@ -1863,7 +1863,7 @@ class IPv6Address(_BaseV6, _BaseAddress):
             A boolean, True if the address is reserved per RFC 4193.
 
         """
-        private_network = IPv6Network('fc00::/7')
+        private_network = IPv6Network(u'fc00::/7')
         return self in private_network
 
     @property
