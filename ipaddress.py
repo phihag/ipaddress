@@ -405,7 +405,7 @@ def get_mixed_type_key(obj):
     return NotImplemented
 
 
-class _TotalOrderingMixin:
+class _TotalOrderingMixin(object):
     # Helper that derives the other comparison operations from
     # __lt__ and __eq__
     # We avoid functools.total_ordering because it doesn't handle
@@ -1023,7 +1023,7 @@ class _BaseNetwork(_IPAddressBase):
                 self.broadcast_address.is_loopback)
 
 
-class _BaseV4:
+class _BaseV4(object):
 
     """Base IPv4 object.
 
@@ -1484,7 +1484,7 @@ class IPv4Network(_BaseV4, _BaseNetwork):
             self.hosts = self.__iter__
 
 
-class _BaseV6:
+class _BaseV6(object):
 
     """Base IPv6 object.
 
