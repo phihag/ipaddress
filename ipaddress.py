@@ -488,7 +488,7 @@ class _IPAddressBase(_TotalOrderingMixin):
     def _check_packed_address(self, address, expected_len):
         address_len = len(address)
         if address_len != expected_len:
-            msg = "%r (len %d != %d) is not permitted as an IPv%d address"
+            msg = "%r (len %d != %d) is not permitted as an IPv%d address (did you pass in a bytes instead of a unicode object?)"
             raise AddressValueError(msg % (address, address_len,
                                            expected_len, self._version))
 
