@@ -45,9 +45,6 @@ class BaseTestCase(unittest.TestCase):
         cm = self.assertRaisesRegex(exc_type, details)
         with cm as exc:
             yield exc
-        # Ensure we produce clean tracebacks on failure
-        if exc.exception.__context__ is not None:
-            self.assertTrue(exc.exception.__suppress_context__)
 
     def assertAddressError(self, details, *args):
         """Ensure a clean AddressValueError"""
@@ -67,10 +64,10 @@ class CommonTestMixin:
 
     def test_empty_address(self):
         with self.assertAddressError("Address cannot be empty"):
-            self.factory("")
+            self.factory(u"")
 
     def test_floats_rejected(self):
-        with self.assertAddressError(re.escape(repr("1.0"))):
+        with self.assertAddressError(re.escape(repr(u"1.0"))):
             self.factory(1.0)
 
     def test_not_an_index_issue15559(self):
@@ -84,16 +81,16 @@ class CommonTestMixin:
 class CommonTestMixin_v4(CommonTestMixin):
 
     def test_leading_zeros(self):
-        self.assertInstancesEqual("000.000.000.000", "0.0.0.0")
-        self.assertInstancesEqual("192.168.000.001", "192.168.0.1")
+        self.assertInstancesEqual(u"000.000.000.000", u"0.0.0.0")
+        self.assertInstancesEqual(u"192.168.000.001", u"192.168.0.1")
 
     def test_int(self):
-        self.assertInstancesEqual(0, "0.0.0.0")
-        self.assertInstancesEqual(3232235521, "192.168.0.1")
+        self.assertInstancesEqual(0, u"0.0.0.0")
+        self.assertInstancesEqual(3232235521, u"192.168.0.1")
 
     def test_packed(self):
-        self.assertInstancesEqual(bytes.fromhex("00000000"), "0.0.0.0")
-        self.assertInstancesEqual(bytes.fromhex("c0a80001"), "192.168.0.1")
+        self.assertInstancesEqual(bytes.fromhex(u"00000000"), u"0.0.0.0")
+        self.assertInstancesEqual(bytes.fromhex(u"c0a80001"), u"192.168.0.1")
 
     def test_negative_ints_rejected(self):
         msg = "-1 (< 0) is not permitted as an IPv4 address"
@@ -118,18 +115,18 @@ class CommonTestMixin_v4(CommonTestMixin):
 class CommonTestMixin_v6(CommonTestMixin):
 
     def test_leading_zeros(self):
-        self.assertInstancesEqual("0000::0000", "::")
-        self.assertInstancesEqual("000::c0a8:0001", "::c0a8:1")
+        self.assertInstancesEqual(u"0000::0000", u"::")
+        self.assertInstancesEqual(u"000::c0a8:0001", u"::c0a8:1")
 
     def test_int(self):
-        self.assertInstancesEqual(0, "::")
-        self.assertInstancesEqual(3232235521, "::c0a8:1")
+        self.assertInstancesEqual(0, u"::")
+        self.assertInstancesEqual(3232235521, u"::c0a8:1")
 
     def test_packed(self):
-        addr = bytes(12) + bytes.fromhex("00000000")
-        self.assertInstancesEqual(addr, "::")
+        addr = bytes(12) + bytes.fromhex(u"00000000")
+        self.assertInstancesEqual(addr, u"::")
         addr = bytes(12) + bytes.fromhex("c0a80001")
-        self.assertInstancesEqual(addr, "::c0a8:1")
+        self.assertInstancesEqual(addr, u"::c0a8:1")
         addr = bytes.fromhex("c0a80001") + bytes(12)
         self.assertInstancesEqual(addr, "c0a8:1::")
 
@@ -159,7 +156,7 @@ class AddressTestCase_v4(BaseTestCase, CommonTestMixin_v4):
     factory = ipaddress.IPv4Address
 
     def test_network_passed_as_address(self):
-        addr = "127.0.0.1/24"
+        addr = u"127.0.0.1/24"
         with self.assertAddressError("Unexpected '/' in %r", addr):
             ipaddress.IPv4Address(addr)
 
@@ -168,29 +165,29 @@ class AddressTestCase_v4(BaseTestCase, CommonTestMixin_v4):
             with self.assertAddressError("Expected 4 octets in %r", addr):
                 ipaddress.IPv4Address(addr)
 
-        assertBadSplit("127.0.1")
-        assertBadSplit("42.42.42.42.42")
-        assertBadSplit("42.42.42")
-        assertBadSplit("42.42")
-        assertBadSplit("42")
-        assertBadSplit("42..42.42.42")
-        assertBadSplit("42.42.42.42.")
-        assertBadSplit("42.42.42.42...")
-        assertBadSplit(".42.42.42.42")
-        assertBadSplit("...42.42.42.42")
-        assertBadSplit("016.016.016")
-        assertBadSplit("016.016")
-        assertBadSplit("016")
-        assertBadSplit("000")
-        assertBadSplit("0x0a.0x0a.0x0a")
-        assertBadSplit("0x0a.0x0a")
-        assertBadSplit("0x0a")
-        assertBadSplit(".")
-        assertBadSplit("bogus")
-        assertBadSplit("bogus.com")
-        assertBadSplit("1000")
-        assertBadSplit("1000000000000000")
-        assertBadSplit("192.168.0.1.com")
+        assertBadSplit(u"127.0.1")
+        assertBadSplit(u"42.42.42.42.42")
+        assertBadSplit(u"42.42.42")
+        assertBadSplit(u"42.42")
+        assertBadSplit(u"42")
+        assertBadSplit(u"42..42.42.42")
+        assertBadSplit(u"42.42.42.42.")
+        assertBadSplit(u"42.42.42.42...")
+        assertBadSplit(u".42.42.42.42")
+        assertBadSplit(u"...42.42.42.42")
+        assertBadSplit(u"016.016.016")
+        assertBadSplit(u"016.016")
+        assertBadSplit(u"016")
+        assertBadSplit(u"000")
+        assertBadSplit(u"0x0a.0x0a.0x0a")
+        assertBadSplit(u"0x0a.0x0a")
+        assertBadSplit(u"0x0a")
+        assertBadSplit(u".")
+        assertBadSplit(u"bogus")
+        assertBadSplit(u"bogus.com")
+        assertBadSplit(u"1000")
+        assertBadSplit(u"1000000000000000")
+        assertBadSplit(u"192.168.0.1.com")
 
     def test_empty_octet(self):
         def assertBadOctet(addr):
@@ -198,8 +195,8 @@ class AddressTestCase_v4(BaseTestCase, CommonTestMixin_v4):
                                           addr):
                 ipaddress.IPv4Address(addr)
 
-        assertBadOctet("42..42.42")
-        assertBadOctet("...")
+        assertBadOctet(u"42..42.42")
+        assertBadOctet(u"...")
 
     def test_invalid_characters(self):
         def assertBadOctet(addr, octet):
@@ -207,15 +204,15 @@ class AddressTestCase_v4(BaseTestCase, CommonTestMixin_v4):
             with self.assertAddressError(re.escape(msg)):
                 ipaddress.IPv4Address(addr)
 
-        assertBadOctet("0x0a.0x0a.0x0a.0x0a", "0x0a")
-        assertBadOctet("0xa.0x0a.0x0a.0x0a", "0xa")
-        assertBadOctet("42.42.42.-0", "-0")
-        assertBadOctet("42.42.42.+0", "+0")
-        assertBadOctet("42.42.42.-42", "-42")
-        assertBadOctet("+1.+2.+3.4", "+1")
-        assertBadOctet("1.2.3.4e0", "4e0")
-        assertBadOctet("1.2.3.4::", "4::")
-        assertBadOctet("1.a.2.3", "a")
+        assertBadOctet(u"0x0a.0x0a.0x0a.0x0a", u"0x0a")
+        assertBadOctet(u"0xa.0x0a.0x0a.0x0a", u"0xa")
+        assertBadOctet(u"42.42.42.-0", u"-0")
+        assertBadOctet(u"42.42.42.+0", u"+0")
+        assertBadOctet(u"42.42.42.-42", u"-42")
+        assertBadOctet("+1.+2.+3.4", u"+1")
+        assertBadOctet(u"1.2.3.4e0", u"4e0")
+        assertBadOctet(u"1.2.3.4::", u"4::")
+        assertBadOctet(u"1.a.2.3", u"a")
 
     def test_octal_decimal_ambiguity(self):
         def assertBadOctet(addr, octet):
@@ -223,8 +220,8 @@ class AddressTestCase_v4(BaseTestCase, CommonTestMixin_v4):
             with self.assertAddressError(re.escape(msg % (octet, addr))):
                 ipaddress.IPv4Address(addr)
 
-        assertBadOctet("016.016.016.016", "016")
-        assertBadOctet("001.000.008.016", "008")
+        assertBadOctet(u"016.016.016.016", u"016")
+        assertBadOctet(u"001.000.008.016", u"008")
 
     def test_octet_length(self):
         def assertBadOctet(addr, octet):
@@ -232,8 +229,8 @@ class AddressTestCase_v4(BaseTestCase, CommonTestMixin_v4):
             with self.assertAddressError(re.escape(msg % (octet, addr))):
                 ipaddress.IPv4Address(addr)
 
-        assertBadOctet("0000.000.000.000", "0000")
-        assertBadOctet("12345.67899.-54321.-98765", "12345")
+        assertBadOctet(u"0000.000.000.000", u"0000")
+        assertBadOctet(u"12345.67899.-54321.-98765", u"12345")
 
     def test_octet_limit(self):
         def assertBadOctet(addr, octet):
@@ -241,15 +238,15 @@ class AddressTestCase_v4(BaseTestCase, CommonTestMixin_v4):
             with self.assertAddressError(re.escape(msg)):
                 ipaddress.IPv4Address(addr)
 
-        assertBadOctet("257.0.0.0", 257)
-        assertBadOctet("192.168.0.999", 999)
+        assertBadOctet(u"257.0.0.0", 257)
+        assertBadOctet(u"192.168.0.999", 999)
 
 
 class AddressTestCase_v6(BaseTestCase, CommonTestMixin_v6):
     factory = ipaddress.IPv6Address
 
     def test_network_passed_as_address(self):
-        addr = "::1/24"
+        addr = u"::1/24"
         with self.assertAddressError("Unexpected '/' in %r", addr):
             ipaddress.IPv6Address(addr)
 
@@ -259,9 +256,9 @@ class AddressTestCase_v6(BaseTestCase, CommonTestMixin_v6):
             with self.assertAddressError(msg, addr):
                 ipaddress.IPv6Address(addr)
 
-        assertBadSplit(":")
-        assertBadSplit(":1")
-        assertBadSplit("FEDC:9878")
+        assertBadSplit(u":")
+        assertBadSplit(u":1")
+        assertBadSplit(u"FEDC:9878")
 
     def test_bad_address_split_v6_too_many_colons(self):
         def assertBadSplit(addr):
@@ -269,12 +266,12 @@ class AddressTestCase_v6(BaseTestCase, CommonTestMixin_v6):
             with self.assertAddressError(msg, addr):
                 ipaddress.IPv6Address(addr)
 
-        assertBadSplit("9:8:7:6:5:4:3::2:1")
-        assertBadSplit("10:9:8:7:6:5:4:3:2:1")
-        assertBadSplit("::8:7:6:5:4:3:2:1")
-        assertBadSplit("8:7:6:5:4:3:2:1::")
+        assertBadSplit(u"9:8:7:6:5:4:3::2:1")
+        assertBadSplit(u"10:9:8:7:6:5:4:3:2:1")
+        assertBadSplit(u"::8:7:6:5:4:3:2:1")
+        assertBadSplit(u"8:7:6:5:4:3:2:1::")
         # A trailing IPv4 address is two parts
-        assertBadSplit("10:9:8:7:6:5:4:3:42.42.42.42")
+        assertBadSplit(u"10:9:8:7:6:5:4:3:42.42.42.42")
 
     def test_bad_address_split_v6_too_many_parts(self):
         def assertBadSplit(addr):
@@ -282,12 +279,12 @@ class AddressTestCase_v6(BaseTestCase, CommonTestMixin_v6):
             with self.assertAddressError(msg, addr):
                 ipaddress.IPv6Address(addr)
 
-        assertBadSplit("3ffe:0:0:0:0:0:0:0:1")
-        assertBadSplit("9:8:7:6:5:4:3:2:1")
-        assertBadSplit("7:6:5:4:3:2:1")
+        assertBadSplit(u"3ffe:0:0:0:0:0:0:0:1")
+        assertBadSplit(u"9:8:7:6:5:4:3:2:1")
+        assertBadSplit(u"7:6:5:4:3:2:1")
         # A trailing IPv4 address is two parts
-        assertBadSplit("9:8:7:6:5:4:3:42.42.42.42")
-        assertBadSplit("7:6:5:4:3:42.42.42.42")
+        assertBadSplit(u"9:8:7:6:5:4:3:42.42.42.42")
+        assertBadSplit(u"7:6:5:4:3:42.42.42.42")
 
     def test_bad_address_split_v6_too_many_parts_with_double_colon(self):
         def assertBadSplit(addr):
@@ -295,7 +292,7 @@ class AddressTestCase_v6(BaseTestCase, CommonTestMixin_v6):
             with self.assertAddressError(msg, addr):
                 ipaddress.IPv6Address(addr)
 
-        assertBadSplit("1:2:3:4::5:6:7:8")
+        assertBadSplit(u"1:2:3:4::5:6:7:8")
 
     def test_bad_address_split_v6_repeated_double_colon(self):
         def assertBadSplit(addr):
@@ -303,15 +300,15 @@ class AddressTestCase_v6(BaseTestCase, CommonTestMixin_v6):
             with self.assertAddressError(msg, addr):
                 ipaddress.IPv6Address(addr)
 
-        assertBadSplit("3ffe::1::1")
-        assertBadSplit("1::2::3::4:5")
-        assertBadSplit("2001::db:::1")
-        assertBadSplit("3ffe::1::")
-        assertBadSplit("::3ffe::1")
-        assertBadSplit(":3ffe::1::1")
-        assertBadSplit("3ffe::1::1:")
-        assertBadSplit(":3ffe::1::1:")
-        assertBadSplit(":::")
+        assertBadSplit(u"3ffe::1::1")
+        assertBadSplit(u"1::2::3::4:5")
+        assertBadSplit(u"2001::db:::1")
+        assertBadSplit(u"3ffe::1::")
+        assertBadSplit(u"::3ffe::1")
+        assertBadSplit(u":3ffe::1::1")
+        assertBadSplit(u"3ffe::1::1:")
+        assertBadSplit(u":3ffe::1::1:")
+        assertBadSplit(u":::")
         assertBadSplit('2001:db8:::1')
 
     def test_bad_address_split_v6_leading_colon(self):
@@ -320,10 +317,10 @@ class AddressTestCase_v6(BaseTestCase, CommonTestMixin_v6):
             with self.assertAddressError(msg, addr):
                 ipaddress.IPv6Address(addr)
 
-        assertBadSplit(":2001:db8::1")
-        assertBadSplit(":1:2:3:4:5:6:7")
-        assertBadSplit(":1:2:3:4:5:6:")
-        assertBadSplit(":6:5:4:3:2:1::")
+        assertBadSplit(u":2001:db8::1")
+        assertBadSplit(u":1:2:3:4:5:6:7")
+        assertBadSplit(u":1:2:3:4:5:6:")
+        assertBadSplit(u":6:5:4:3:2:1::")
 
     def test_bad_address_split_v6_trailing_colon(self):
         def assertBadSplit(addr):
@@ -331,24 +328,24 @@ class AddressTestCase_v6(BaseTestCase, CommonTestMixin_v6):
             with self.assertAddressError(msg, addr):
                 ipaddress.IPv6Address(addr)
 
-        assertBadSplit("2001:db8::1:")
-        assertBadSplit("1:2:3:4:5:6:7:")
-        assertBadSplit("::1.2.3.4:")
-        assertBadSplit("::7:6:5:4:3:2:")
+        assertBadSplit(u"2001:db8::1:")
+        assertBadSplit(u"1:2:3:4:5:6:7:")
+        assertBadSplit(u"::1.2.3.4:")
+        assertBadSplit(u"::7:6:5:4:3:2:")
 
     def test_bad_v4_part_in(self):
         def assertBadAddressPart(addr, v4_error):
             with self.assertAddressError("%s in %r", v4_error, addr):
                 ipaddress.IPv6Address(addr)
 
-        assertBadAddressPart("3ffe::1.net", "Expected 4 octets in '1.net'")
-        assertBadAddressPart("3ffe::127.0.1",
+        assertBadAddressPart(u"3ffe::1.net", "Expected 4 octets in '1.net'")
+        assertBadAddressPart(u"3ffe::127.0.1",
                              "Expected 4 octets in '127.0.1'")
-        assertBadAddressPart("::1.2.3",
+        assertBadAddressPart(u"::1.2.3",
                              "Expected 4 octets in '1.2.3'")
-        assertBadAddressPart("::1.2.3.4.5",
+        assertBadAddressPart(u"::1.2.3.4.5",
                              "Expected 4 octets in '1.2.3.4.5'")
-        assertBadAddressPart("3ffe::1.1.1.net",
+        assertBadAddressPart(u"3ffe::1.1.1.net",
                              "Only decimal digits permitted in 'net' "
                              "in '1.1.1.net'")
 
@@ -358,11 +355,11 @@ class AddressTestCase_v6(BaseTestCase, CommonTestMixin_v6):
             with self.assertAddressError(re.escape(msg)):
                 ipaddress.IPv6Address(addr)
 
-        assertBadPart("3ffe::goog", "goog")
-        assertBadPart("3ffe::-0", "-0")
-        assertBadPart("3ffe::+0", "+0")
-        assertBadPart("3ffe::-1", "-1")
-        assertBadPart("1.2.3.4::", "1.2.3.4")
+        assertBadPart(u"3ffe::goog", "goog")
+        assertBadPart(u"3ffe::-0", "-0")
+        assertBadPart(u"3ffe::+0", "+0")
+        assertBadPart(u"3ffe::-1", "-1")
+        assertBadPart(u"1.2.3.4::", u"1.2.3.4")
         assertBadPart('1234:axy::b', "axy")
 
     def test_part_length(self):
@@ -371,17 +368,17 @@ class AddressTestCase_v6(BaseTestCase, CommonTestMixin_v6):
             with self.assertAddressError(msg, part, addr):
                 ipaddress.IPv6Address(addr)
 
-        assertBadPart("::00000", "00000")
-        assertBadPart("3ffe::10000", "10000")
-        assertBadPart("02001:db8::", "02001")
-        assertBadPart('2001:888888::1', "888888")
+        assertBadPart(u"::00000", u"00000")
+        assertBadPart(u"3ffe::10000", u"10000")
+        assertBadPart(u"02001:db8::", u"02001")
+        assertBadPart('2001:888888::1', u"888888")
 
 
 class NetmaskTestMixin_v4(CommonTestMixin_v4):
     """Input validation on interfaces and networks is very similar"""
 
     def test_split_netmask(self):
-        addr = "1.2.3.4/32/24"
+        addr = u"1.2.3.4/32/24"
         with self.assertAddressError("Only one '/' permitted in %r" % addr):
             self.factory(addr)
 
@@ -394,9 +391,9 @@ class NetmaskTestMixin_v4(CommonTestMixin_v4):
         assertBadAddress("/8", "Address cannot be empty")
         assertBadAddress("bogus", "Expected 4 octets")
         assertBadAddress("google.com", "Expected 4 octets")
-        assertBadAddress("10/8", "Expected 4 octets")
-        assertBadAddress("::1.2.3.4", "Only decimal digits")
-        assertBadAddress("1.2.3.256", re.escape("256 (> 255)"))
+        assertBadAddress(u"10/8", "Expected 4 octets")
+        assertBadAddress(u"::1.2.3.4", "Only decimal digits")
+        assertBadAddress(u"1.2.3.256", re.escape(u"256 (> 255)"))
 
     def test_netmask_errors(self):
         def assertBadNetmask(addr, netmask):
@@ -404,12 +401,12 @@ class NetmaskTestMixin_v4(CommonTestMixin_v4):
             with self.assertNetmaskError(msg % netmask):
                 self.factory("%s/%s" % (addr, netmask))
 
-        assertBadNetmask("1.2.3.4", "")
-        assertBadNetmask("1.2.3.4", "33")
-        assertBadNetmask("1.2.3.4", "254.254.255.256")
-        assertBadNetmask("1.1.1.1", "254.xyz.2.3")
-        assertBadNetmask("1.1.1.1", "240.255.0.0")
-        assertBadNetmask("1.1.1.1", "pudding")
+        assertBadNetmask(u"1.2.3.4", "")
+        assertBadNetmask(u"1.2.3.4", u"33")
+        assertBadNetmask(u"1.2.3.4", u"254.254.255.256")
+        assertBadNetmask(u"1.1.1.1", u"254.xyz.2.3")
+        assertBadNetmask(u"1.1.1.1", u"240.255.0.0")
+        assertBadNetmask(u"1.1.1.1", "pudding")
 
 class InterfaceTestCase_v4(BaseTestCase, NetmaskTestMixin_v4):
     factory = ipaddress.IPv4Interface
@@ -434,9 +431,9 @@ class NetmaskTestMixin_v6(CommonTestMixin_v6):
         assertBadAddress("/", "Address cannot be empty")
         assertBadAddress("/8", "Address cannot be empty")
         assertBadAddress("google.com", "At least 3 parts")
-        assertBadAddress("1.2.3.4", "At least 3 parts")
-        assertBadAddress("10/8", "At least 3 parts")
-        assertBadAddress("1234:axy::b", "Only hex digits")
+        assertBadAddress(u"1.2.3.4", "At least 3 parts")
+        assertBadAddress(u"10/8", "At least 3 parts")
+        assertBadAddress(u"1234:axy::b", "Only hex digits")
 
     def test_netmask_errors(self):
         def assertBadNetmask(addr, netmask):
@@ -444,11 +441,11 @@ class NetmaskTestMixin_v6(CommonTestMixin_v6):
             with self.assertNetmaskError(msg % netmask):
                 self.factory("%s/%s" % (addr, netmask))
 
-        assertBadNetmask("::1", "")
-        assertBadNetmask("::1", "::1")
-        assertBadNetmask("::1", "1::")
-        assertBadNetmask("::1", "129")
-        assertBadNetmask("::1", "pudding")
+        assertBadNetmask(u"::1", "")
+        assertBadNetmask(u"::1", u"::1")
+        assertBadNetmask(u"::1", u"1::")
+        assertBadNetmask(u"::1", u"129")
+        assertBadNetmask(u"::1", "pudding")
 
 class InterfaceTestCase_v6(BaseTestCase, NetmaskTestMixin_v6):
     factory = ipaddress.IPv6Interface
@@ -1558,11 +1555,11 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEqual(ipaddress.IPv6Network(1).version, 6)
 
     def testWithStar(self):
-        self.assertEqual(self.ipv4_interface.with_prefixlen, "1.2.3.4/24")
+        self.assertEqual(self.ipv4_interface.with_prefixlen, u"1.2.3.4/24")
         self.assertEqual(self.ipv4_interface.with_netmask,
-                         "1.2.3.4/255.255.255.0")
+                         u"1.2.3.4/255.255.255.0")
         self.assertEqual(self.ipv4_interface.with_hostmask,
-                         "1.2.3.4/0.0.0.255")
+                         u"1.2.3.4/0.0.0.255")
 
         self.assertEqual(self.ipv6_interface.with_prefixlen,
                          '2001:658:22a:cafe:200::1/64')
@@ -1668,6 +1665,7 @@ if not hasattr(BaseTestCase, 'assertRaisesRegex'):
             if not issubclass(exc_type, self.expected):
                 # let unexpected exceptions pass through
                 return False
+            self.exception = exc_value
             if self.expected_regex is None:
                 return True
 

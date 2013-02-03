@@ -14,13 +14,16 @@ __version__ = '1.0'
 import functools
 
 # Compatibility functions
-_compat_all_ints = (int,)
+_compat_int_types = (int,)
 try:
-    _compat_all_ints = (int, long)
+    _compat_int_types = (int, long)
 except NameError:
     pass
-
-
+try:
+    _compat_str = unicode
+except NameError:
+    _compat_str = str
+    assert bytes != str
 
 
 IPV4LENGTH = 32
@@ -1197,7 +1200,7 @@ class IPv4Address(_BaseV4, _BaseAddress):
         _BaseV4.__init__(self, address)
 
         # Efficient constructor from integer.
-        if isinstance(address, int):
+        if isinstance(address, _compat_int_types):
             self._check_int_address(address)
             self._ip = address
             return
@@ -1210,7 +1213,7 @@ class IPv4Address(_BaseV4, _BaseAddress):
 
         # Assume input argument to be string or any object representation
         # which converts into a formatted IP string.
-        addr_str = str(address)
+        addr_str = _compat_str(address)
         self._ip = self._ip_int_from_string(addr_str)
 
     @property
@@ -1752,7 +1755,7 @@ class IPv6Address(_BaseV6, _BaseAddress):
         _BaseV6.__init__(self, address)
 
         # Efficient constructor from integer.
-        if isinstance(address, _compat_all_ints):
+        if isinstance(address, _compat_int_types):
             self._check_int_address(address)
             self._ip = address
             return
@@ -1765,7 +1768,7 @@ class IPv6Address(_BaseV6, _BaseAddress):
 
         # Assume input argument to be string or any object representation
         # which converts into a formatted IP string.
-        addr_str = str(address)
+        addr_str = _compat_str(address)
         self._ip = self._ip_int_from_string(addr_str)
 
     @property
