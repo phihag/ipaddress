@@ -24,6 +24,10 @@ try:
 except NameError:
     _compat_str = str
     assert bytes != str
+try:
+    _compat_int_from_bytes = int.from_bytes
+except AttributeError:
+    _compat_int_from_bytes = lambda cls,byt: int(byt.encode('hex'), 16)
 
 
 IPV4LENGTH = 32
@@ -1063,7 +1067,7 @@ class _BaseV4:
             raise AddressValueError("Expected 4 octets in %r" % ip_str)
 
         try:
-            return int.from_bytes(map(self._parse_octet, octets), 'big')
+            return _compat_int_from_bytes(map(self._parse_octet, octets), 'big')
         except ValueError as exc:
             raise AddressValueError("%s in %r" % (exc, ip_str))
 
@@ -1208,7 +1212,7 @@ class IPv4Address(_BaseV4, _BaseAddress):
         # Constructing from a packed address
         if isinstance(address, bytes):
             self._check_packed_address(address, 4)
-            self._ip = int.from_bytes(address, 'big')
+            self._ip = _compat_int_from_bytes(address, 'big')
             return
 
         # Assume input argument to be string or any object representation
@@ -1763,7 +1767,7 @@ class IPv6Address(_BaseV6, _BaseAddress):
         # Constructing from a packed address
         if isinstance(address, bytes):
             self._check_packed_address(address, 16)
-            self._ip = int.from_bytes(address, 'big')
+            self._ip = _compat_int_from_bytes(address, 'big')
             return
 
         # Assume input argument to be string or any object representation

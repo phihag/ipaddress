@@ -104,7 +104,7 @@ class CommonTestMixin_v4(CommonTestMixin):
 
     def test_bad_packed_length(self):
         def assertBadLength(length):
-            addr = bytes(length)
+            addr = b'0' * length
             msg = "%r (len %d != 4) is not permitted as an IPv4 address"
             with self.assertAddressError(re.escape(msg % (addr, length))):
                 self.factory(addr)
@@ -142,7 +142,7 @@ class CommonTestMixin_v6(CommonTestMixin):
 
     def test_bad_packed_length(self):
         def assertBadLength(length):
-            addr = bytes(length)
+            addr = b'0' * length
             msg = "%r (len %d != 16) is not permitted as an IPv6 address"
             with self.assertAddressError(re.escape(msg % (addr, length))):
                 self.factory(addr)
