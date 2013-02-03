@@ -3,12 +3,12 @@
 
 """Unittest for ipaddress module."""
 
-
 import unittest
 import re
 import contextlib
 import operator
 import ipaddress
+
 
 class BaseTestCase(unittest.TestCase):
     # One big change in ipaddress over the original ipaddr module is
@@ -1643,6 +1643,41 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEqual(ipaddress.IPv4Address('172.29.45.100'),
                          sixtofouraddr.sixtofour)
         self.assertFalse(bad_addr.sixtofour)
+
+# Monkey-patch test runner
+if not hasattr(BaseTestCase, 'assertRaisesRegex'):
+    class _AssertRaisesRegex(object):
+        def __init__(self, expected_exception, expected_regex):
+            self.expected = expected_exception
+            self.expected_regex = re.compile(expected_regex)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_value, tb):
+            if exc_type is None:
+                try:
+                    exc_name = self.expected.__name__
+                except AttributeError:
+                    exc_name = str(self.expected)
+                if self.obj_name:
+                    self._raiseFailure("{} not raised by {}".format(exc_name,
+                                                                    self.obj_name))
+                else:
+                    self._raiseFailure("{} not raised".format(exc_name))
+            if not issubclass(exc_type, self.expected):
+                # let unexpected exceptions pass through
+                return False
+            if self.expected_regex is None:
+                return True
+
+            expected_regex = self.expected_regex
+            if not expected_regex.search(str(exc_value)):
+                raise AssertionError('"{}" does not match "{}"'.format(
+                         expected_regex.pattern, str(exc_value)))
+            return True
+
+    BaseTestCase.assertRaisesRegex = _AssertRaisesRegex
 
 
 if __name__ == '__main__':
