@@ -13,6 +13,16 @@ __version__ = '1.0'
 
 import functools
 
+# Compatibility functions
+_compat_all_ints = (int,)
+try:
+    _compat_all_ints = (int, long)
+except NameError:
+    pass
+
+
+
+
 IPV4LENGTH = 32
 IPV6LENGTH = 128
 
@@ -1742,7 +1752,7 @@ class IPv6Address(_BaseV6, _BaseAddress):
         _BaseV6.__init__(self, address)
 
         # Efficient constructor from integer.
-        if isinstance(address, int):
+        if isinstance(address, _compat_all_ints):
             self._check_int_address(address)
             self._ip = address
             return
