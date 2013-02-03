@@ -1841,7 +1841,7 @@ class IPv6Address(_BaseV6, _BaseAddress):
             A boolean, True if the address is reserved per RFC 4291.
 
         """
-        linklocal_network = IPv6Network('fe80::/10')
+        linklocal_network = IPv6Network(u'fe80::/10')
         return self in linklocal_network
 
     @property
