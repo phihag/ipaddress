@@ -12,6 +12,7 @@ __version__ = '1.0'
 
 
 import functools
+import struct
 
 # Compatibility functions
 _compat_int_types = (int,)
@@ -28,7 +29,19 @@ try:
     _compat_int_from_bytes = int.from_bytes
 except AttributeError:
     _compat_int_from_bytes = lambda cls,byt: int(byt.encode('hex'), 16)
-
+def _compat_to_bytes(intval, length, endianess):
+    assert endianess == 'big'
+    if length == 4:
+        res = struct.pack('!I', intval)
+        return res
+    elif length == 16:
+        res = struct.pack('!QQ', intval >> 64, intval & 0xffffffffffffffff)
+        correct = intval.to_bytes(length, endianess)
+        assert correct[:8] == res[:8]
+        assert correct[8:] == res[8:]
+        return res
+    else:
+        raise NotImplementedError()
 
 IPV4LENGTH = 32
 IPV6LENGTH = 128
@@ -151,7 +164,7 @@ def v4_int_to_packed(address):
 
     """
     try:
-        return address.to_bytes(4, 'big')
+        return _compat_to_bytes(address, 4, 'big')
     except:
         raise ValueError("Address negative or too large for IPv4")
 
@@ -167,7 +180,7 @@ def v6_int_to_packed(address):
 
     """
     try:
-        return address.to_bytes(16, 'big')
+        return _compat_to_bytes(address, 16, 'big')
     except:
         raise ValueError("Address negative or too large for IPv6")
 
@@ -553,12 +566,12 @@ class _BaseAddress(_IPAddressBase):
     # Shorthand for Integer addition and subtraction. This is not
     # meant to ever support addition/subtraction of addresses.
     def __add__(self, other):
-        if not isinstance(other, int):
+        if not isinstance(other, _compat_int_types):
             return NotImplemented
         return self.__class__(int(self) + other)
 
     def __sub__(self, other):
-        if not isinstance(other, int):
+        if not isinstance(other, _compat_int_types):
             return NotImplemented
         return self.__class__(int(self) - other)
 
@@ -1117,7 +1130,7 @@ class _BaseV4(object):
             The IP address as a string in dotted decimal notation.
 
         """
-        return '.'.join(map(str, ip_int.to_bytes(4, 'big')))
+        return '.'.join(map(str, _compat_to_bytes(ip_int, 4, 'big')))
 
     def _is_valid_netmask(self, netmask):
         """Verify that the netmask is valid.
@@ -1302,7 +1315,7 @@ class IPv4Address(_BaseV4, _BaseAddress):
 class IPv4Interface(IPv4Address):
 
     def __init__(self, address):
-        if isinstance(address, (bytes, int)):
+        if isinstance(address, (bytes,) + _compat_int_types):
             IPv4Address.__init__(self, address)
             self.network = IPv4Network(self._ip)
             self._prefixlen = self._max_prefixlen
@@ -1432,7 +1445,7 @@ class IPv4Network(_BaseV4, _BaseNetwork):
             return
 
         # Efficient constructor from integer.
-        if isinstance(address, int):
+        if isinstance(address, _compat_int_types):
             self.network_address = IPv4Address(address)
             self._prefixlen = self._max_prefixlen
             self.netmask = IPv4Address(self._ALL_ONES)
@@ -1916,7 +1929,7 @@ class IPv6Address(_BaseV6, _BaseAddress):
 class IPv6Interface(IPv6Address):
 
     def __init__(self, address):
-        if isinstance(address, (bytes, int)):
+        if isinstance(address, (bytes, _compat_int_types)):
             IPv6Address.__init__(self, address)
             self.network = IPv6Network(self._ip)
             self._prefixlen = self._max_prefixlen
@@ -2039,7 +2052,7 @@ class IPv6Network(_BaseV6, _BaseNetwork):
         _BaseNetwork.__init__(self, address)
 
         # Efficient constructor from integer.
-        if isinstance(address, int):
+        if isinstance(address, _compat_int_types):
             self.network_address = IPv6Address(address)
             self._prefixlen = self._max_prefixlen
             self.netmask = IPv6Address(self._ALL_ONES)
