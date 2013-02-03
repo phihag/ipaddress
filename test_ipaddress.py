@@ -75,7 +75,8 @@ class CommonTestMixin:
         # bytes constructor. Thus, we disallow implicit use as an integer
         self.assertRaises(TypeError, operator.index, self.factory(1))
         self.assertRaises(TypeError, hex, self.factory(1))
-        self.assertRaises(TypeError, bytes, self.factory(1))
+        # Commented out: bytes semantics are different in 2.x
+        # self.assertRaises(TypeError, bytes, self.factory(1))
 
 
 class CommonTestMixin_v4(CommonTestMixin):
