@@ -25,6 +25,10 @@ try:
 except NameError:
     _compat_str = str
     assert bytes != str
+if b'\0'[0] == 0: # Python 3 semantics
+    _compat_bytes_to_byte_vals = lambda byt: byt
+else:
+    _compat_bytes_to_byte_vals = lambda byt: [struct.unpack('!B', b)[0] for b in byt]
 try:
     _compat_int_from_byte_vals = int.from_bytes
 except AttributeError:
@@ -1229,7 +1233,7 @@ class IPv4Address(_BaseV4, _BaseAddress):
         # Constructing from a packed address
         if isinstance(address, bytes):
             self._check_packed_address(address, 4)
-            self._ip = _compat_int_from_byte_vals(address, 'big')
+            self._ip = _compat_int_from_byte_vals(_compat_bytes_to_byte_vals(address), 'big')
             return
 
         # Assume input argument to be string or any object representation
@@ -1784,7 +1788,7 @@ class IPv6Address(_BaseV6, _BaseAddress):
         # Constructing from a packed address
         if isinstance(address, bytes):
             self._check_packed_address(address, 16)
-            self._ip = _compat_int_from_byte_vals(address, 'big')
+            self._ip = _compat_int_from_byte_vals(_compat_bytes_to_byte_vals(address), 'big')
             return
 
         # Assume input argument to be string or any object representation
