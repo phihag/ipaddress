@@ -209,7 +209,7 @@ class AddressTestCase_v4(BaseTestCase, CommonTestMixin_v4):
         assertBadOctet(u"42.42.42.-0", u"-0")
         assertBadOctet(u"42.42.42.+0", u"+0")
         assertBadOctet(u"42.42.42.-42", u"-42")
-        assertBadOctet("+1.+2.+3.4", u"+1")
+        assertBadOctet(u"+1.+2.+3.4", u"+1")
         assertBadOctet(u"1.2.3.4e0", u"4e0")
         assertBadOctet(u"1.2.3.4::", u"4::")
         assertBadOctet(u"1.a.2.3", u"a")
