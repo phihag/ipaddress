@@ -320,7 +320,7 @@ class AddressTestCase_v6(BaseTestCase, CommonTestMixin_v6):
         assertBadSplit(u"3ffe::1::1:")
         assertBadSplit(u":3ffe::1::1:")
         assertBadSplit(u":::")
-        assertBadSplit('2001:db8:::1')
+        assertBadSplit(u'2001:db8:::1')
 
     def test_bad_address_split_v6_leading_colon(self):
         def assertBadSplit(addr):
@@ -349,16 +349,16 @@ class AddressTestCase_v6(BaseTestCase, CommonTestMixin_v6):
             with self.assertAddressError("%s in %r", v4_error, addr):
                 ipaddress.IPv6Address(addr)
 
-        assertBadAddressPart(u"3ffe::1.net", "Expected 4 octets in '1.net'")
+        assertBadAddressPart(u"3ffe::1.net", "Expected 4 octets in u?'1.net'")
         assertBadAddressPart(u"3ffe::127.0.1",
-                             "Expected 4 octets in '127.0.1'")
+                             "Expected 4 octets in u?'127.0.1'")
         assertBadAddressPart(u"::1.2.3",
-                             "Expected 4 octets in '1.2.3'")
+                             "Expected 4 octets in u?'1.2.3'")
         assertBadAddressPart(u"::1.2.3.4.5",
-                             "Expected 4 octets in '1.2.3.4.5'")
+                             "Expected 4 octets in u?'1.2.3.4.5'")
         assertBadAddressPart(u"3ffe::1.1.1.net",
-                             "Only decimal digits permitted in 'net' "
-                             "in '1.1.1.net'")
+                             "Only decimal digits permitted in u?'net' "
+                             "in u?'1.1.1.net'")
 
     def test_invalid_characters(self):
         def assertBadPart(addr, part):
@@ -366,12 +366,12 @@ class AddressTestCase_v6(BaseTestCase, CommonTestMixin_v6):
             with self.assertAddressError(re.escape(msg)):
                 ipaddress.IPv6Address(addr)
 
-        assertBadPart(u"3ffe::goog", "goog")
-        assertBadPart(u"3ffe::-0", "-0")
-        assertBadPart(u"3ffe::+0", "+0")
-        assertBadPart(u"3ffe::-1", "-1")
+        assertBadPart(u"3ffe::goog", u"goog")
+        assertBadPart(u"3ffe::-0", u"-0")
+        assertBadPart(u"3ffe::+0", u"+0")
+        assertBadPart(u"3ffe::-1", u"-1")
         assertBadPart(u"1.2.3.4::", u"1.2.3.4")
-        assertBadPart('1234:axy::b', "axy")
+        assertBadPart(u'1234:axy::b', u"axy")
 
     def test_part_length(self):
         def assertBadPart(addr, part):
