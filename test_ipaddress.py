@@ -1670,7 +1670,7 @@ if not hasattr(BaseTestCase, 'assertRaisesRegex'):
                     exc_name = str(self.expected)
                 if self.obj_name:
                     self._raiseFailure("{} not raised by {}".format(exc_name,
-                                                                    self.obj_name))
+                                                            self.obj_name))
                 else:
                     self._raiseFailure("{} not raised".format(exc_name))
             if not issubclass(exc_type, self.expected):
