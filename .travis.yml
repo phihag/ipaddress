@@ -3,7 +3,7 @@ python:
   - "2.6"
   - "2.7"
   - "3.3"
-script: nosetests test --verbose
+script: python test_ipaddress.py
 notifications:
   email:
     - phihag@phihag.de
