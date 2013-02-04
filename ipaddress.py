@@ -14,6 +14,7 @@ __version__ = '1.0'
 import functools
 import struct
 
+
 # Compatibility functions
 _compat_int_types = (int,)
 try:
@@ -25,10 +26,11 @@ try:
 except NameError:
     _compat_str = str
     assert bytes != str
-if b'\0'[0] == 0: # Python 3 semantics
+if b'\0'[0] == 0:  # Python 3 semantics
     _compat_bytes_to_byte_vals = lambda byt: byt
 else:
-    _compat_bytes_to_byte_vals = lambda byt: [struct.unpack('!B', b)[0] for b in byt]
+    _compat_bytes_to_byte_vals = (lambda byt:
+                                  [struct.unpack('!B', b)[0] for b in byt])
 try:
     _compat_int_from_byte_vals = int.from_bytes
 except AttributeError:
@@ -39,15 +41,17 @@ except AttributeError:
             assert isinstance(bv, _compat_int_types)
             res = (res << 8) + bv
         return res
+
+
 def _compat_to_bytes(intval, length, endianess):
     assert isinstance(intval, _compat_int_types)
     assert endianess == 'big'
     if length == 4:
-        if intval < 0 or intval >= 2**32:
+        if intval < 0 or intval >= 2 ** 32:
             raise struct.error("integer out of range for 'I' format code")
         return struct.pack('!I', intval)
     elif length == 16:
-        if intval < 0 or intval >= 2**128:
+        if intval < 0 or intval >= 2 ** 128:
             raise struct.error("integer out of range for 'QQ' format code")
         return struct.pack('!QQ', intval >> 64, intval & 0xffffffffffffffff)
     else:
@@ -61,6 +65,7 @@ else:
 
 IPV4LENGTH = 32
 IPV6LENGTH = 128
+
 
 class AddressValueError(ValueError):
     """A Value Error related to the address."""
@@ -441,18 +446,22 @@ class _TotalOrderingMixin(object):
     # NotImplemented correctly yet (http://bugs.python.org/issue10042)
     def __eq__(self, other):
         raise NotImplementedError
+
     def __ne__(self, other):
         equal = self.__eq__(other)
         if equal is NotImplemented:
             return NotImplemented
         return not equal
+
     def __lt__(self, other):
         raise NotImplementedError
+
     def __le__(self, other):
         less = self.__lt__(other)
         if less is NotImplemented or not less:
             return self.__eq__(other)
         return less
+
     def __gt__(self, other):
         less = self.__lt__(other)
         if less is NotImplemented:
@@ -461,11 +470,13 @@ class _TotalOrderingMixin(object):
         if equal is NotImplemented:
             return NotImplemented
         return not (less or equal)
+
     def __ge__(self, other):
         less = self.__lt__(other)
         if less is NotImplemented:
             return NotImplemented
         return not less
+
 
 class _IPAddressBase(_TotalOrderingMixin):
 
@@ -498,7 +509,8 @@ class _IPAddressBase(_TotalOrderingMixin):
     def _check_packed_address(self, address, expected_len):
         address_len = len(address)
         if address_len != expected_len:
-            msg = "%r (len %d != %d) is not permitted as an IPv%d address (did you pass in a bytes instead of a unicode object?)"
+            msg = ("%r (len %d != %d) is not permitted as an IPv%d address "
+                  "(did you pass in a bytes instead of a unicode object?)")
             raise AddressValueError(msg % (address, address_len,
                                            expected_len, self._version))
 
@@ -1062,7 +1074,7 @@ class _BaseV4(object):
     """
 
     # Equivalent to 255.255.255.255 or 32 bits of 1's.
-    _ALL_ONES = (2**IPV4LENGTH) - 1
+    _ALL_ONES = (2 ** IPV4LENGTH) - 1
     _DECIMAL_DIGITS = frozenset('0123456789')
 
     # the valid octets for host and netmasks. only useful for IPv4.
@@ -1096,7 +1108,8 @@ class _BaseV4(object):
             raise AddressValueError("Expected 4 octets in %r" % ip_str)
 
         try:
-            return _compat_int_from_byte_vals(map(self._parse_octet, octets), 'big')
+            bvs = map(self._parse_octet, octets)
+            return _compat_int_from_byte_vals(bvs, 'big')
         except ValueError as exc:
             raise AddressValueError("%s in %r" % (exc, ip_str))
 
@@ -1147,7 +1160,9 @@ class _BaseV4(object):
 
         """
         return u'.'.join(_compat_str(
-                            struct.unpack('!B', b)[0] if isinstance(b, bytes) else b)
+                            struct.unpack('!B', b)[0]
+                            if isinstance(b, bytes)
+                            else b)
                          for b in _compat_to_bytes(ip_int, 4, 'big'))
 
     def _is_valid_netmask(self, netmask):
@@ -1243,7 +1258,8 @@ class IPv4Address(_BaseV4, _BaseAddress):
         # Constructing from a packed address
         if isinstance(address, bytes):
             self._check_packed_address(address, 4)
-            self._ip = _compat_int_from_byte_vals(_compat_bytes_to_byte_vals(address), 'big')
+            bvs = _compat_bytes_to_byte_vals(address)
+            self._ip = _compat_int_from_byte_vals(bvs, 'big')
             return
 
         # Assume input argument to be string or any object representation
@@ -1524,7 +1540,7 @@ class _BaseV6(object):
 
     """
 
-    _ALL_ONES = (2**IPV6LENGTH) - 1
+    _ALL_ONES = (2 ** IPV6LENGTH) - 1
     _HEXTET_COUNT = 8
     _HEX_DIGITS = frozenset('0123456789ABCDEFabcdef')
 
@@ -1570,7 +1586,8 @@ class _BaseV6(object):
         # leading or trailing zero part.
         _max_parts = self._HEXTET_COUNT + 1
         if len(parts) > _max_parts:
-            msg = "At most %d colons permitted in %r" % (_max_parts-1, ip_str)
+            msg = ("At most %d colons permitted in %r" %
+                    (_max_parts - 1, ip_str))
             raise AddressValueError(msg)
 
         # Disregarding the endpoints, find '::' with nothing in between.
@@ -1603,7 +1620,7 @@ class _BaseV6(object):
             parts_skipped = self._HEXTET_COUNT - (parts_hi + parts_lo)
             if parts_skipped < 1:
                 msg = "Expected at most %d other parts with '::' in %r"
-                raise AddressValueError(msg % (self._HEXTET_COUNT-1, ip_str))
+                raise AddressValueError(msg % (self._HEXTET_COUNT - 1, ip_str))
         else:
             # Otherwise, allocate the entire address to parts_hi.  The
             # endpoints could still be empty, but _parse_hextet() will check
@@ -1727,7 +1744,7 @@ class _BaseV6(object):
             raise ValueError('IPv6 address is too large')
 
         hex_str = '%032x' % ip_int
-        hextets = ['%x' % int(hex_str[x:x+4], 16) for x in range(0, 32, 4)]
+        hextets = ['%x' % int(hex_str[x:x + 4], 16) for x in range(0, 32, 4)]
 
         hextets = self._compress_hextets(hextets)
         return ':'.join(hextets)
@@ -1751,7 +1768,7 @@ class _BaseV6(object):
 
         ip_int = self._ip_int_from_string(ip_str)
         hex_str = '%032x' % ip_int
-        parts = [hex_str[x:x+4] for x in range(0, 32, 4)]
+        parts = [hex_str[x:x + 4] for x in range(0, 32, 4)]
         if isinstance(self, (_BaseNetwork, IPv6Interface)):
             return '%s/%d' % (':'.join(parts), self._prefixlen)
         return ':'.join(parts)
@@ -1798,7 +1815,8 @@ class IPv6Address(_BaseV6, _BaseAddress):
         # Constructing from a packed address
         if isinstance(address, bytes):
             self._check_packed_address(address, 16)
-            self._ip = _compat_int_from_byte_vals(_compat_bytes_to_byte_vals(address), 'big')
+            bvs = _compat_bytes_to_byte_vals(address)
+            self._ip = _compat_int_from_byte_vals(bvs, 'big')
             return
 
         # Assume input argument to be string or any object representation
@@ -1832,16 +1850,16 @@ class IPv6Address(_BaseV6, _BaseAddress):
             reserved IPv6 Network ranges.
 
         """
-        reserved_networks = [IPv6Network(u'::/8'), IPv6Network(u'100::/8'),
-                             IPv6Network(u'200::/7'), IPv6Network(u'400::/6'),
-                             IPv6Network(u'800::/5'), IPv6Network(u'1000::/4'),
-                             IPv6Network(u'4000::/3'), IPv6Network(u'6000::/3'),
-                             IPv6Network(u'8000::/3'), IPv6Network(u'A000::/3'),
-                             IPv6Network(u'C000::/3'), IPv6Network(u'E000::/4'),
-                             IPv6Network(u'F000::/5'), IPv6Network(u'F800::/6'),
-                             IPv6Network(u'FE00::/9')]
+        reserved_nets = [IPv6Network(u'::/8'), IPv6Network(u'100::/8'),
+                        IPv6Network(u'200::/7'), IPv6Network(u'400::/6'),
+                        IPv6Network(u'800::/5'), IPv6Network(u'1000::/4'),
+                        IPv6Network(u'4000::/3'), IPv6Network(u'6000::/3'),
+                        IPv6Network(u'8000::/3'), IPv6Network(u'A000::/3'),
+                        IPv6Network(u'C000::/3'), IPv6Network(u'E000::/4'),
+                        IPv6Network(u'F000::/5'), IPv6Network(u'F800::/6'),
+                        IPv6Network(u'FE00::/9')]
 
-        return any(self in x for x in reserved_networks)
+        return any(self in x for x in reserved_nets)
 
     @property
     def is_link_local(self):
