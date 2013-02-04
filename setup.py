@@ -8,7 +8,7 @@ except ImportError:
 
 settings = {
     'name': 'ipaddress',
-    'version': '1.0.2',
+    'version': '1.0.3',
     'description': 'IPv4/IPv6 manipulation library',
     'long_description': 'Port of the 3.3+ ipaddress module to 2.6 and 2.7',
     'author': 'Philipp Hagemeister',
@@ -25,7 +25,7 @@ settings = {
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.3'
     ),
-    'packages': ['ipaddress']
+    'py_modules': ['ipaddress']
 }
 
 setup(**settings)
