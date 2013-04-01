@@ -252,6 +252,12 @@ class AddressTestCase_v4(BaseTestCase, CommonTestMixin_v4):
         assertBadOctet(u"257.0.0.0", 257)
         assertBadOctet(u"192.168.0.999", 999)
 
+    def test_bytes_message(self):
+        with self.assertAddressError(r'bytes'):
+            ipaddress.IPv4Address(b'192.0.2.1')
+        with self.assertAddressError(r'bytes'):
+            ipaddress.ip_address(b'192.0.2.1')
+
 
 class AddressTestCase_v6(BaseTestCase, CommonTestMixin_v6):
     factory = ipaddress.IPv6Address
@@ -383,6 +389,12 @@ class AddressTestCase_v6(BaseTestCase, CommonTestMixin_v6):
         assertBadPart(u"3ffe::10000", u"10000")
         assertBadPart(u"02001:db8::", u"02001")
         assertBadPart(u'2001:888888::1', u"888888")
+
+    def test_bytes_message(self):
+        with self.assertAddressError(r'bytes'):
+            ipaddress.IPv6Address(b'::123')
+        with self.assertAddressError(r'bytes'):
+            ipaddress.ip_address(b'::123')
 
 
 class NetmaskTestMixin_v4(CommonTestMixin_v4):
