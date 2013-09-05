@@ -646,14 +646,18 @@ class _BaseNetwork(_IPAddressBase):
         """
         network = int(self.network_address)
         broadcast = int(self.broadcast_address)
-        for x in range(network + 1, broadcast):
-            yield self._address_class(x)
+        i = network + 1
+        while i < broadcast:
+            yield self._address_class(i)
+            i += 1
 
     def __iter__(self):
         network = int(self.network_address)
         broadcast = int(self.broadcast_address)
-        for x in range(network, broadcast + 1):
-            yield self._address_class(x)
+        i = network + 1
+        while i < broadcast:
+            yield self._address_class(i)
+            i += 1
 
     def __getitem__(self, n):
         network = int(self.network_address)
