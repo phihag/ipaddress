@@ -1711,5 +1711,16 @@ if not hasattr(BaseTestCase, 'assertIn'):
     ComparisonTests.assertNotIn = _assertNotIn
 
 
+# Test for https://github.com/phihag/ipaddress/pull/6
+class Python2RangeTest(unittest.TestCase):
+    def test_network_hosts(self):
+        net = ipaddress.ip_network(u'::/0')
+        next(net.hosts())  # This should not throw OverflowError
+
+    def test_network_iter(self):
+        net = ipaddress.ip_network(u'::/0')
+        next(iter(net))  # This should not throw OverflowError
+
+
 if __name__ == '__main__':
     unittest.main()
