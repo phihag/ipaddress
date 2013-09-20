@@ -13,4 +13,5 @@ ipaddress.ip_address(u'1.2.3.4')
 Wrong:
 ```python
 ipaddress.ip_address('1.2.3.4')
+ipaddress.ip_address(b'1.2.3.4')
 ```
