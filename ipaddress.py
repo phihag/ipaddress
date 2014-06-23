@@ -704,7 +704,8 @@ class _BaseNetwork(_IPAddressBase):
             return False
         # dealing with another network.
         if isinstance(other, _BaseNetwork):
-            return False
+            return (int(self.network_address) <= int(other.network_address) and
+                    int(self.broadcast_address) >= int(other.broadcast_address))
         # dealing with another address
         else:
             # address
