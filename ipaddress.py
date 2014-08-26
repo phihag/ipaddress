@@ -1097,11 +1097,12 @@ class _BaseV4(object):
     def _explode_shorthand_ip_string(self):
         return _compat_str(self)
 
-    def _ip_int_from_string(self, ip_str):
+    def _ip_int_from_string(self, ip_str, decimal_only=False):
         """Turn the given IP string into an integer for comparison.
 
         Args:
             ip_str: A string, the IP ip_str.
+            decimal_only: All parts must be decimal
 
         Returns:
             The IP ip_str as an integer.
@@ -1118,16 +1119,17 @@ class _BaseV4(object):
             raise AddressValueError("Expected 4 octets in %r" % ip_str)
 
         try:
-            bvs = map(self._parse_octet, octets)
+            bvs = [self._parse_octet(octet, decimal_only) for octet in octets]
             return _compat_int_from_byte_vals(bvs, 'big')
         except ValueError as exc:
             raise AddressValueError("%s in %r" % (exc, ip_str))
 
-    def _parse_octet(self, octet_str):
+    def _parse_octet(self, octet_str, decimal_only=False):
         """Convert a decimal octet into an integer.
 
         Args:
             octet_str: A string, the number to parse.
+            decimal_only: The string must be a decimal number.
 
         Returns:
             The octet as an integer.
@@ -1154,6 +1156,9 @@ class _BaseV4(object):
         # decimal are rejected as ambiguous
         if octet_int > 7 and octet_str[0] == '0':
             msg = "Ambiguous (octal/decimal) value in %r not permitted"
+            raise ValueError(msg % octet_str)
+        if decimal_only and len(octet_str) > 1 and octet_str[0] == '0':
+            msg = "%r is a octal number but only decimal allowed"
             raise ValueError(msg % octet_str)
         if octet_int > 255:
             raise ValueError("Octet %d (> 255) not permitted" % octet_int)
@@ -1239,7 +1244,7 @@ class IPv4Address(_BaseV4, _BaseAddress):
 
     """Represent and manipulate single IPv4 Addresses."""
 
-    def __init__(self, address):
+    def __init__(self, address, decimal_only=False):
 
         """
         Args:
@@ -1250,6 +1255,10 @@ class IPv4Address(_BaseV4, _BaseAddress):
               or, more generally
               IPv4Address(int(IPv4Address('192.0.2.1'))) ==
                 IPv4Address('192.0.2.1')
+
+            decimal_only: A boolean which determines if each part must be an
+              decimal number. IPv6 addresses with IPv4 addresses at the end
+              require all parts to be only decimal numbers.
 
         Raises:
             AddressValueError: If ipaddress isn't a valid IPv4 address.
@@ -1274,7 +1283,7 @@ class IPv4Address(_BaseV4, _BaseAddress):
         # Assume input argument to be string or any object representation
         # which converts into a formatted IP string.
         addr_str = _compat_str(address)
-        self._ip = self._ip_int_from_string(addr_str)
+        self._ip = self._ip_int_from_string(addr_str, decimal_only)
 
     @property
     def packed(self):
@@ -1584,7 +1593,7 @@ class _BaseV6(object):
         # If the address has an IPv4-style suffix, convert it to hexadecimal.
         if '.' in parts[-1]:
             try:
-                ipv4_int = IPv4Address(parts.pop())._ip
+                ipv4_int = IPv4Address(parts.pop(), True)._ip
             except AddressValueError as exc:
                 raise AddressValueError("%s in %r" % (exc, ip_str))
             parts.append('%x' % ((ipv4_int >> 16) & 0xFFFF))
