@@ -8,9 +8,9 @@ except ImportError:
 
 settings = {
     'name': 'ipaddress',
-    'version': '1.0.6',
+    'version': '1.0.7',
     'description': 'IPv4/IPv6 manipulation library',
-    'long_description': 'Port of the 3.3+ ipaddress module to 2.6 and 2.7',
+    'long_description': 'Port of the 3.3+ ipaddress module to 2.6, 2.7, and 3.2',
     'author': 'Philipp Hagemeister',
     'author_email': 'phihag@phihag.de',
     'url': 'https://github.com/phihag/ipaddress',
