@@ -13,3 +13,4 @@ script:
 notifications:
   email:
     - phihag@phihag.de
+sudo: false
