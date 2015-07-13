@@ -76,6 +76,8 @@ def _compat_range(start, end, step=1):
 
 
 class _TotalOrderingMixin(object):
+    __slots__ = ()
+
     # Helper that derives the other comparison operations from
     # __lt__ and __eq__
     # We avoid functools.total_ordering because it doesn't handle
