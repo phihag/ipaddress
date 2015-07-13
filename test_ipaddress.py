@@ -746,18 +746,12 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEqual(ipaddress.IPv4Network((3221225985,
                                                 '255.255.255.255')), net)
         # strict=True and host bits set
-        with self.assertRaises(ValueError):
-            ipaddress.IPv4Network(('192.0.2.1', 24))
-        with self.assertRaises(ValueError):
-            ipaddress.IPv4Network((ip, 24))
-        with self.assertRaises(ValueError):
-            ipaddress.IPv4Network((3221225985, 24))
-        with self.assertRaises(ValueError):
-            ipaddress.IPv4Network(('192.0.2.1', '255.255.255.0'))
-        with self.assertRaises(ValueError):
-            ipaddress.IPv4Network((ip, '255.255.255.0'))
-        with self.assertRaises(ValueError):
-            ipaddress.IPv4Network((3221225985, '255.255.255.0'))
+        self.assertRaises(ValueError, ipaddress.IPv4Network, ('192.0.2.1', 24))
+        self.assertRaises(ValueError, ipaddress.IPv4Network, (ip, 24))
+        self.assertRaises(ValueError, ipaddress.IPv4Network, (3221225985, 24))
+        self.assertRaises(ValueError, ipaddress.IPv4Network, ('192.0.2.1', '255.255.255.0'))
+        self.assertRaises(ValueError, ipaddress.IPv4Network, (ip, '255.255.255.0'))
+        self.assertRaises(ValueError, ipaddress.IPv4Network, (3221225985, '255.255.255.0'))
         # strict=False and host bits set
         net = ipaddress.IPv4Network('192.0.2.0/24')
         self.assertEqual(ipaddress.IPv4Network(('192.0.2.1', 24),
@@ -1976,6 +1970,15 @@ class Python2RangeTest(unittest.TestCase):
     def test_network_iter(self):
         net = ipaddress.ip_network('::/0')
         next(iter(net))  # This should not throw OverflowError
+
+
+class CompatTest(unittest.TestCase):
+    def test_bit_length(self):
+        self.assertEqual(ipaddress._compat_bit_length(0), 0)
+        self.assertEqual(ipaddress._compat_bit_length(1), 1)
+        self.assertEqual(ipaddress._compat_bit_length(2), 2)
+        self.assertEqual(ipaddress._compat_bit_length(3), 2)
+        self.assertEqual(ipaddress._compat_bit_length(4), 3)
 
 if __name__ == '__main__':
     unittest.main()

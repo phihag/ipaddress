@@ -12,7 +12,7 @@ from __future__ import unicode_literals
 
 __version__ = '1.0.7'
 
-
+import itertools
 import struct
 
 
@@ -61,7 +61,10 @@ if hasattr(int, 'bit_length'):
     # Not int.bit_length , since that won't work in 2.7 where long exists
     _compat_bit_length = lambda i: i.bit_length()
 else:
-    _compat_bit_length = lambda i: len(bin(abs(i))) - 2
+    def _compat_bit_length(i):
+        for res in itertools.count():
+            if i >> res == 0:
+                return res
 
 
 def _compat_range(start, end, step=1):
