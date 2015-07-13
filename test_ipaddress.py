@@ -1980,5 +1980,11 @@ class CompatTest(unittest.TestCase):
         self.assertEqual(ipaddress._compat_bit_length(3), 2)
         self.assertEqual(ipaddress._compat_bit_length(4), 3)
 
+
+class SingleIssuesTest(unittest.TestCase):
+    # https://github.com/phihag/ipaddress/issues/14
+    def test_issue_14(self):
+        self.assertTrue(ipaddress.ip_address('127.0.0.1').is_private)
+
 if __name__ == '__main__':
     unittest.main()
