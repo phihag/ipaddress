@@ -818,13 +818,11 @@ class IpaddrUnitTest(unittest.TestCase):
 
         # strict=True and host bits set
         ip = ipaddress.IPv6Address('2001:db8::1')
-        with self.assertRaises(ValueError):
-            ipaddress.IPv6Network(('2001:db8::1', 96))
-        with self.assertRaises(ValueError):
-            ipaddress.IPv6Network((
-                42540766411282592856903984951653826561, 96))
-        with self.assertRaises(ValueError):
-            ipaddress.IPv6Network((ip, 96))
+        self.assertRaises(ValueError, ipaddress.IPv6Network, ('2001:db8::1', 96))
+        self.assertRaises(
+            ValueError, ipaddress.IPv6Network,
+            (42540766411282592856903984951653826561, 96))
+        self.assertRaises(ValueError, ipaddress.IPv6Network, (ip, 96))
         # strict=False and host bits set
         net = ipaddress.IPv6Network('2001:db8::/96')
         self.assertEqual(ipaddress.IPv6Network(('2001:db8::1', 96),
