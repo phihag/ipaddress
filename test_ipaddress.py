@@ -595,8 +595,8 @@ class LargestObject(ipaddress._TotalOrderingMixin):
 class SmallestObject(ipaddress._TotalOrderingMixin):
     def __eq__(self, other):
         return isinstance(other, SmallestObject)
-    def __gt__(self, other):
-        return False
+    def __lt__(self, other):
+        return True
 
 
 class ComparisonTests(unittest.TestCase):
