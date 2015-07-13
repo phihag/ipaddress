@@ -8,7 +8,7 @@ except ImportError:
 
 settings = {
     'name': 'ipaddress',
-    'version': '1.0.7',
+    'version': '1.0.8',
     'description': 'IPv4/IPv6 manipulation library',
     'long_description': 'Port of the 3.3+ ipaddress module to 2.6, 2.7, and 3.2',
     'author': 'Philipp Hagemeister',
