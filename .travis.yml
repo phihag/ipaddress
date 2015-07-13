@@ -4,6 +4,8 @@ python:
   - "2.7"
   - "3.2"
   - "3.3"
+  - "pypy"
+  - "pypy3"
 script: python test_ipaddress.py
 notifications:
   email:
