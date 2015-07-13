@@ -1746,7 +1746,7 @@ class IpaddrUnitTest(unittest.TestCase):
                          ipaddress.ip_network('200::1/128').is_global)
         # test addresses
         self.assertEqual(True, ipaddress.ip_address('ffff::').is_multicast)
-        self.assertEqual(True, ipaddress.ip_address(2**128 - 1).is_multicast)
+        self.assertEqual(True, ipaddress.ip_address(2 ** 128 - 1).is_multicast)
         self.assertEqual(True, ipaddress.ip_address('ff00::').is_multicast)
         self.assertEqual(False, ipaddress.ip_address('fdff::').is_multicast)
 
