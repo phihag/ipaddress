@@ -1,17 +1,26 @@
 ipaddress
 =========
 
-Python 3.3's ipaddress for Python 2.6 and 2.7.
+Python 3.3+'s [ipaddress](http://docs.python.org/dev/library/ipaddress) for Python 2.6, 2.7, 3.2.
 
-Note that you must pass in unicode objects when constructing from a character representation!
+Note that as in Python 3.3+ you must use character strings and not byte strings for textual IP address representations:
 
-Correct:
 ```python
-ipaddress.ip_address(u'1.2.3.4')
+>>> from __future__ import unicode_literals
+>>> ipaddress.ip_address('1.2.3.4')
+IPv4Address(u'1.2.3.4')
 ```
-
-Wrong:
+or
 ```python
-ipaddress.ip_address('1.2.3.4')
-ipaddress.ip_address(b'1.2.3.4')
+>>> ipaddress.ip_address(u'1.2.3.4')
+IPv4Address(u'1.2.3.4')
+```
+but not:
+```python
+>>> ipaddress.ip_address(b'1.2.3.4')
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "ipaddress.py", line 163, in ip_address
+    ' a unicode object?' % address)
+ipaddress.AddressValueError: '1.2.3.4' does not appear to be an IPv4 or IPv6 address. Did you pass in a bytes (str in Python 2) instead of a unicode object?
 ```
