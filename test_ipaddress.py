@@ -463,13 +463,16 @@ class NetmaskTestMixin_v4(CommonTestMixin_v4):
             self.assertEqual(
                 _compat_str(self.factory('0.0.0.0/%s' % net.netmask)), net_str)
             # Zero prefix is treated as decimal.
-            self.assertEqual(_compat_str(self.factory('0.0.0.0/0%d' % i)), net_str)
+            self.assertEqual(
+                _compat_str(self.factory('0.0.0.0/0%d' % i)),
+                net_str)
             # Generate and re-parse the expanded hostmask.  The ambiguous
             # cases (/0 and /32) are treated as netmasks.
             if i in (32, 0):
                 net_str = '0.0.0.0/%d' % (32 - i)
             self.assertEqual(
-                _compat_str(self.factory('0.0.0.0/%s' % net.hostmask)), net_str)
+                _compat_str(self.factory('0.0.0.0/%s' % net.hostmask)),
+                net_str)
 
     def test_netmask_errors(self):
         def assertBadNetmask(addr, netmask):
@@ -565,7 +568,9 @@ class NetmaskTestMixin_v6(CommonTestMixin_v6):
     def test_valid_netmask(self):
         # We only support CIDR for IPv6, because expanded netmasks are not
         # standard notation.
-        self.assertEqual(_compat_str(self.factory('2001:db8::/32')), '2001:db8::/32')
+        self.assertEqual(
+            _compat_str(self.factory('2001:db8::/32')),
+            '2001:db8::/32')
         for i in range(0, 129):
             # Generate and re-parse the CIDR format (trivial).
             net_str = '::/%d' % i
@@ -953,7 +958,8 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEqual(list(ipaddress._find_address_range([ip1, ip2, ip3])),
                          [(ip1, ip3)])
         self.assertEqual(128, ipaddress._count_righthand_zero_bits(0, 128))
-        self.assertTrue(re.match("IPv4Network\(u?'1.2.3.0/24'\)", repr(self.ipv4_network)))
+        self.assertTrue(
+            re.match("IPv4Network\(u?'1.2.3.0/24'\)", repr(self.ipv4_network)))
 
     def testMissingAddressVersion(self):
         class Broken(ipaddress._BaseAddress):
@@ -1098,12 +1104,14 @@ class IpaddrUnitTest(unittest.TestCase):
 
     def testGetSupernet3(self):
         self.assertEqual(self.ipv4_network.supernet(3).prefixlen, 21)
-        self.assertEqual(_compat_str(self.ipv4_network.supernet(3).network_address),
-                         '1.2.0.0')
+        self.assertEqual(
+            _compat_str(self.ipv4_network.supernet(3).network_address),
+            '1.2.0.0')
 
         self.assertEqual(self.ipv6_network.supernet(3).prefixlen, 61)
-        self.assertEqual(_compat_str(self.ipv6_network.supernet(3).network_address),
-                         '2001:658:22a:caf8::')
+        self.assertEqual(
+            _compat_str(self.ipv6_network.supernet(3).network_address),
+            '2001:658:22a:caf8::')
 
     def testGetSupernet4(self):
         self.assertRaises(ValueError, self.ipv4_network.supernet,

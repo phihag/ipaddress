@@ -1,7 +1,7 @@
 default: test
 
 test:
-	flake8 ipaddress.py test_ipaddress.py --ignore E501
+	flake8 ipaddress.py test_ipaddress.py
 	python test_ipaddress.py
 
 pypi:
