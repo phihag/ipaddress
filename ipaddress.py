@@ -1609,7 +1609,7 @@ class IPv4Network(_BaseV4, _BaseNetwork):
         _BaseNetwork.__init__(self, address)
 
         # Constructing from a packed address or integer
-        if isinstance(address, (int, bytes)):
+        if isinstance(address, (_compat_int_types, bytes)):
             self.network_address = IPv4Address(address)
             self.netmask, self._prefixlen = self._make_netmask(
                 self._max_prefixlen)
