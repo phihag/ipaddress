@@ -192,6 +192,12 @@ def ip_network(address, strict=True):
     except (AddressValueError, NetmaskValueError):
         pass
 
+    if isinstance(address, bytes):
+        raise AddressValueError(
+            '%r does not appear to be an IPv4 or IPv6 network. '
+            'Did you pass in a bytes (str in Python 2) instead of'
+            ' a unicode object?' % address)
+
     raise ValueError('%r does not appear to be an IPv4 or IPv6 network' %
                      address)
 
