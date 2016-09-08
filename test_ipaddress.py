@@ -1197,21 +1197,21 @@ class IpaddrUnitTest(unittest.TestCase):
     def testGetSubnets3(self):
         subnets = [str(x) for x in self.ipv4_network.subnets(8)]
         self.assertEqual(subnets[:3],
-            ['1.2.3.0/32', '1.2.3.1/32', '1.2.3.2/32'])
+                         ['1.2.3.0/32', '1.2.3.1/32', '1.2.3.2/32'])
         self.assertEqual(subnets[-3:],
-            ['1.2.3.253/32', '1.2.3.254/32', '1.2.3.255/32'])
+                         ['1.2.3.253/32', '1.2.3.254/32', '1.2.3.255/32'])
         self.assertEqual(len(subnets), 256)
 
         ipv6_network = ipaddress.IPv6Network('2001:658:22a:cafe::/120')
         subnets = [str(x) for x in ipv6_network.subnets(8)]
         self.assertEqual(subnets[:3],
-            ['2001:658:22a:cafe::/128',
-             '2001:658:22a:cafe::1/128',
-             '2001:658:22a:cafe::2/128'])
+                         ['2001:658:22a:cafe::/128',
+                          '2001:658:22a:cafe::1/128',
+                          '2001:658:22a:cafe::2/128'])
         self.assertEqual(subnets[-3:],
-            ['2001:658:22a:cafe::fd/128',
-             '2001:658:22a:cafe::fe/128',
-             '2001:658:22a:cafe::ff/128'])
+                         ['2001:658:22a:cafe::fd/128',
+                          '2001:658:22a:cafe::fe/128',
+                          '2001:658:22a:cafe::ff/128'])
         self.assertEqual(len(subnets), 256)
 
     def testSubnetFailsForLargeCidrDiff(self):
