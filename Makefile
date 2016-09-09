@@ -1,8 +1,10 @@
-default: test
+default: test lint
 
 test:
-	flake8 ipaddress.py test_ipaddress.py
 	python test_ipaddress.py
+
+lint:
+	@(python --version 2>&1 | grep -q ' 2\.6\.') || flake8 ipaddress.py test_ipaddress.py
 
 pypi:
 	python setup.py sdist bdist_wheel upload
@@ -10,5 +12,5 @@ pypi:
 clean:
 	rm -rf -- build dist ipaddress.egg-info
 
-.PHONY: default test clean pypi
+.PHONY: default test clean pypi lint
 
