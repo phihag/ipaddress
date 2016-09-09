@@ -694,7 +694,15 @@ class ComparisonTests(unittest.TestCase):
     v4_objects = v4_addresses + [v4net]
     v6_addresses = [v6addr, v6intf]
     v6_objects = v6_addresses + [v6net]
+
     objects = v4_objects + v6_objects
+
+    v4addr2 = ipaddress.IPv4Address(2)
+    v4net2 = ipaddress.IPv4Network(2)
+    v4intf2 = ipaddress.IPv4Interface(2)
+    v6addr2 = ipaddress.IPv6Address(2)
+    v6net2 = ipaddress.IPv6Network(2)
+    v6intf2 = ipaddress.IPv6Interface(2)
 
     def test_foreign_type_equality(self):
         # __eq__ should never raise TypeError directly
@@ -713,6 +721,31 @@ class ComparisonTests(unittest.TestCase):
                 if lhs is rhs:
                     continue
                 self.assertNotEqual(lhs, rhs)
+
+    def test_same_type_equality(self):
+        for obj in self.objects:
+            self.assertEqual(obj, obj)
+            self.assertLessEqual(obj, obj)
+            self.assertGreaterEqual(obj, obj)
+
+    def test_same_type_ordering(self):
+        for lhs, rhs in (
+            (self.v4addr, self.v4addr2),
+            (self.v4net, self.v4net2),
+            (self.v4intf, self.v4intf2),
+            (self.v6addr, self.v6addr2),
+            (self.v6net, self.v6net2),
+            (self.v6intf, self.v6intf2),
+        ):
+            self.assertNotEqual(lhs, rhs)
+            self.assertLess(lhs, rhs)
+            self.assertLessEqual(lhs, rhs)
+            self.assertGreater(rhs, lhs)
+            self.assertGreaterEqual(rhs, lhs)
+            self.assertFalse(lhs > rhs)
+            self.assertFalse(rhs < lhs)
+            self.assertFalse(lhs >= rhs)
+            self.assertFalse(rhs <= lhs)
 
     def test_containment(self):
         for obj in self.v4_addresses:
@@ -812,7 +845,7 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertTrue(re.match("IPv6Interface\(u?'::1/128'\)",
                         repr(ipaddress.IPv6Interface('::1'))))
 
-    # issue #16531: constructing IPv4Network from a (address, mask) tuple
+    # issue #16531: constructing IPv4Network from an (address, mask) tuple
     def testIPv4Tuple(self):
         # /32
         ip = ipaddress.IPv4Address('192.0.2.1')
@@ -872,7 +905,7 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEqual(ipaddress.IPv4Interface((3221225985, 24)),
                          ipaddress.IPv4Interface('192.0.2.1/24'))
 
-    # issue #16531: constructing IPv6Network from a (address, mask) tuple
+    # issue #16531: constructing IPv6Network from an (address, mask) tuple
     def testIPv6Tuple(self):
         # /128
         ip = ipaddress.IPv6Address('2001:db8::')
@@ -1194,6 +1227,30 @@ class IpaddrUnitTest(unittest.TestCase):
              '2001:658:22a:cafe:8000::/66',
              '2001:658:22a:cafe:c000::/66'])
 
+    def testGetSubnets3(self):
+        subnets = [str(x) for x in self.ipv4_network.subnets(8)]
+        self.assertEqual(
+            subnets[:3],
+            ['1.2.3.0/32', '1.2.3.1/32', '1.2.3.2/32'])
+        self.assertEqual(
+            subnets[-3:],
+            ['1.2.3.253/32', '1.2.3.254/32', '1.2.3.255/32'])
+        self.assertEqual(len(subnets), 256)
+
+        ipv6_network = ipaddress.IPv6Network('2001:658:22a:cafe::/120')
+        subnets = [str(x) for x in ipv6_network.subnets(8)]
+        self.assertEqual(
+            subnets[:3],
+            ['2001:658:22a:cafe::/128',
+             '2001:658:22a:cafe::1/128',
+             '2001:658:22a:cafe::2/128'])
+        self.assertEqual(
+            subnets[-3:],
+            ['2001:658:22a:cafe::fd/128',
+             '2001:658:22a:cafe::fe/128',
+             '2001:658:22a:cafe::ff/128'])
+        self.assertEqual(len(subnets), 256)
+
     def testSubnetFailsForLargeCidrDiff(self):
         self.assertRaises(ValueError, list,
                           self.ipv4_interface.network.subnets(9))
@@ -1251,6 +1308,7 @@ class IpaddrUnitTest(unittest.TestCase):
 
         self.assertEqual(_compat_str(self.ipv6_network[5]),
                          '2001:658:22a:cafe::5')
+        self.assertRaises(IndexError, self.ipv6_network.__getitem__, 1 << 64)
 
     def testGetitem(self):
         # http://code.google.com/p/ipaddr-py/issues/detail?id=15
@@ -1344,7 +1402,7 @@ class IpaddrUnitTest(unittest.TestCase):
         ip4 = ipaddress.IPv4Address('1.1.1.3')
         ip5 = ipaddress.IPv4Address('1.1.1.4')
         ip6 = ipaddress.IPv4Address('1.1.1.0')
-        # check that addreses are subsumed properly.
+        # check that addresses are subsumed properly.
         collapsed = ipaddress.collapse_addresses(
             [ip1, ip2, ip3, ip4, ip5, ip6])
         self.assertEqual(
@@ -1371,9 +1429,11 @@ class IpaddrUnitTest(unittest.TestCase):
         # stored in no particular order b/c we want CollapseAddr to call
         # [].sort
         ip6 = ipaddress.IPv4Network('1.1.0.0/22')
+
         # check that addreses are subsumed properly.
         collapsed = ipaddress.collapse_addresses(
             [ip1, ip2, ip3, ip4, ip5, ip6])
+
         self.assertEqual(list(collapsed),
                          [ipaddress.IPv4Network('1.1.0.0/22'),
                           ipaddress.IPv4Network('1.1.4.0/24')])
@@ -1434,7 +1494,7 @@ class IpaddrUnitTest(unittest.TestCase):
         # test a /24 is summarized properly
         self.assertEqual(list(summarize(ip1, ip2))[0],
                          ipaddress.ip_network('1.1.1.0/24'))
-        # test an  IPv4 range that isn't on a network byte boundary
+        # test an IPv4 range that isn't on a network byte boundary
         ip2 = ipaddress.ip_address('1.1.1.8')
         self.assertEqual(list(summarize(ip1, ip2)),
                          [ipaddress.ip_network('1.1.1.0/29'),
@@ -1447,7 +1507,7 @@ class IpaddrUnitTest(unittest.TestCase):
 
         ip1 = ipaddress.ip_address('1::')
         ip2 = ipaddress.ip_address('1:ffff:ffff:ffff:ffff:ffff:ffff:ffff')
-        # test a IPv6 is sumamrized properly
+        # test an IPv6 is summarized properly
         self.assertEqual(list(summarize(ip1, ip2))[0],
                          ipaddress.ip_network('1::/16'))
         # test an IPv6 range that isn't on a network byte boundary
@@ -1706,6 +1766,9 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEqual(False,
                          ipaddress.ip_address('169.255.100.200').is_link_local)
 
+        self.assertTrue(ipaddress.ip_address('192.0.7.1').is_global)
+        self.assertFalse(ipaddress.ip_address('203.0.113.1').is_global)
+
         self.assertEqual(True,
                          ipaddress.ip_address('127.100.200.254').is_loopback)
         self.assertEqual(True, ipaddress.ip_address('127.42.0.0').is_loopback)
@@ -1803,6 +1866,7 @@ class IpaddrUnitTest(unittest.TestCase):
         addr3 = ipaddress.ip_network('10.2.1.0/24')
         addr4 = ipaddress.ip_address('10.1.1.0')
         addr5 = ipaddress.ip_network('2001:db8::0/32')
+        addr6 = ipaddress.ip_network('10.1.1.5/32')
         self.assertEqual(sorted(list(addr1.address_exclude(addr2))),
                          [ipaddress.ip_network('10.1.1.64/26'),
                           ipaddress.ip_network('10.1.1.128/25')])
@@ -1810,6 +1874,15 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertRaises(TypeError, list, addr1.address_exclude(addr4))
         self.assertRaises(TypeError, list, addr1.address_exclude(addr5))
         self.assertEqual(list(addr1.address_exclude(addr1)), [])
+        self.assertEqual(sorted(list(addr1.address_exclude(addr6))),
+                         [ipaddress.ip_network('10.1.1.0/30'),
+                          ipaddress.ip_network('10.1.1.4/32'),
+                          ipaddress.ip_network('10.1.1.6/31'),
+                          ipaddress.ip_network('10.1.1.8/29'),
+                          ipaddress.ip_network('10.1.1.16/28'),
+                          ipaddress.ip_network('10.1.1.32/27'),
+                          ipaddress.ip_network('10.1.1.64/26'),
+                          ipaddress.ip_network('10.1.1.128/25')])
 
     def testHash(self):
         self.assertEqual(hash(ipaddress.ip_interface('10.1.1.0/24')),
@@ -1873,7 +1946,6 @@ class IpaddrUnitTest(unittest.TestCase):
             '1:2:3:4:5:6:7:8': '1:2:3:4:5:6:7:8/128',
             '2001:0:0:4:0:0:0:8': '2001:0:0:4::8/128',
             '2001:0:0:4:5:6:7:8': '2001::4:5:6:7:8/128',
-            '2001:0:3:4:5:6:7:8': '2001:0:3:4:5:6:7:8/128',
             '2001:0:3:4:5:6:7:8': '2001:0:3:4:5:6:7:8/128',
             '0:0:3:0:0:0:0:ffff': '0:0:3::ffff/128',
             '0:0:0:4:0:0:0:ffff': '::4:0:0:0:ffff/128',
