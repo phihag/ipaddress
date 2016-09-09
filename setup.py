@@ -15,7 +15,7 @@ settings = {
     'author_email': 'phihag@phihag.de',
     'url': 'https://github.com/phihag/ipaddress',
     'license': 'Python Software Foundation License',
-    'classifiers': (
+    'classifiers': [
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Natural Language :: English',
@@ -25,7 +25,7 @@ settings = {
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
-    ),
+    ],
     'py_modules': ['ipaddress']
 }
 
