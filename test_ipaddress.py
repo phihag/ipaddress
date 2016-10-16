@@ -726,7 +726,7 @@ class ComparisonTests(unittest.TestCase):
         for obj in self.objects:
             self.assertEqual(obj, obj)
             self.assertTrue(obj <= obj)
-            self.assertGreaterEqual(obj, obj)
+            self.assertTrue(obj >= obj)
 
     def test_same_type_ordering(self):
         for lhs, rhs in (
