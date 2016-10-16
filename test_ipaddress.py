@@ -725,7 +725,7 @@ class ComparisonTests(unittest.TestCase):
     def test_same_type_equality(self):
         for obj in self.objects:
             self.assertEqual(obj, obj)
-            self.assertLessEqual(obj, obj)
+            self.assertTrue(obj <= obj)
             self.assertGreaterEqual(obj, obj)
 
     def test_same_type_ordering(self):
@@ -738,10 +738,10 @@ class ComparisonTests(unittest.TestCase):
             (self.v6intf, self.v6intf2),
         ):
             self.assertNotEqual(lhs, rhs)
-            self.assertLess(lhs, rhs)
-            self.assertLessEqual(lhs, rhs)
-            self.assertGreater(rhs, lhs)
-            self.assertGreaterEqual(rhs, lhs)
+            self.assertTrue(lhs < rhs)
+            self.assertTrue(lhs <= rhs)
+            self.assertTrue(rhs > lhs)
+            self.assertTrue(rhs >= lhs)
             self.assertFalse(lhs > rhs)
             self.assertFalse(rhs < lhs)
             self.assertFalse(lhs >= rhs)
