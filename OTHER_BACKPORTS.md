@@ -32,7 +32,7 @@ The other backport (py2-ipaddress), however, has decided that bytestrings ought 
 
     ipaddress.ip_address(b'\x3a\x3a\x31\x32')
 
-**returns `ipaddress.IPv4Address('58.58.49.50')` in Python 3 and my backport, but `ipaddress.IPv6Address('::12')` with py2-ipaddress**.
+**returns `ipaddress.IPv4Address(u'58.58.49.50')` in Python 3 and my backport, but `ipaddress.IPv6Address(u'::12')` with py2-ipaddress**.
 
 Since the original use case for the ipaddress module was network and firewall management code, it's needless to say that this incompatibility would have disastrous consequences.
 
@@ -46,6 +46,8 @@ It is possible to initialize from a packed representation in py2-ipaddress. As f
             return ipaddress.ip_address(packed)
 
 In my opinion, a backport should not necessitate additional workarounds like this.
+
+[Another incompability](https://github.com/maxmind/GeoIP2-python/issues/41) of py2-ipaddress is that `packed` property returns a `bytearray` object with that backport. Again, this backports strives to be compatible to the Python 3.3+ ipaddress.
 
 I have discussed with the py2-ipaddress folks at length, but as far as I understand their position is that they're writing py2-only code anyways, and thus don't have to care about py3/py2-ipaddress compatibility. Apparently, their code is also consistently confused between unicode strings and byte strings. They simply write `ipaddress.ip_address(bytearray(packed)))` to initialize from a packed representation, since they don't expect their code to ever be ported to Python 3.
 
