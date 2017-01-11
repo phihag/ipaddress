@@ -2087,6 +2087,7 @@ class IpaddrUnitTest(unittest.TestCase):
                          sixtofouraddr.sixtofour)
         self.assertFalse(bad_addr.sixtofour)
 
+
 # Monkey-patch test runner
 if not hasattr(BaseTestCase, 'assertRaisesRegex'):
     class _AssertRaisesRegex(object):
@@ -2180,6 +2181,7 @@ class SingleIssuesTest(unittest.TestCase):
         self.assertTrue(net1.supernet_of(net2))
         self.assertTrue(net2.subnet_of(net1))
         self.assertFalse(net2.supernet_of(net1))
+
 
 if __name__ == '__main__':
     unittest.main()
