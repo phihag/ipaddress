@@ -748,13 +748,13 @@ class ComparisonTests(unittest.TestCase):
             self.assertFalse(rhs <= lhs)
 
     def test_containment(self):
-        for obj in self.v4_addresses:
+        for obj in self.v4_addresses + [self.v4net]:
             self.assertIn(obj, self.v4net)
-        for obj in self.v6_addresses:
+        for obj in self.v6_addresses + [self.v6net]:
             self.assertIn(obj, self.v6net)
-        for obj in self.v4_objects + [self.v6net]:
+        for obj in self.v4_objects:
             self.assertNotIn(obj, self.v6net)
-        for obj in self.v6_objects + [self.v4net]:
+        for obj in self.v6_objects:
             self.assertNotIn(obj, self.v4net)
 
     def test_mixed_type_ordering(self):
