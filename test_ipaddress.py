@@ -135,7 +135,7 @@ class CommonTestMixin_v4(CommonTestMixin):
 
     def test_bad_packed_length(self):
         def assertBadLength(length):
-            addr = b'0' * length
+            addr = b'\0' * length
             msg = "%r (len %d != 4) is not permitted as an IPv4 address"
             with self.assertAddressError(re.escape(msg % (addr, length))):
                 self.factory(addr)
@@ -155,11 +155,11 @@ class CommonTestMixin_v6(CommonTestMixin):
         self.assertInstancesEqual(3232235521, "::c0a8:1")
 
     def test_packed(self):
-        addr = (b'\0' * 12) + _compat_bytes_fromhex("00000000")
+        addr = b'\0'*12 + _compat_bytes_fromhex("00000000")
         self.assertInstancesEqual(addr, "::")
-        addr = (b'\0' * 12) + _compat_bytes_fromhex("c0a80001")
+        addr = b'\0'*12 + _compat_bytes_fromhex("c0a80001")
         self.assertInstancesEqual(addr, "::c0a8:1")
-        addr = _compat_bytes_fromhex("c0a80001") + (b'\0' * 12)
+        addr = _compat_bytes_fromhex("c0a80001") + b'\0'*12
         self.assertInstancesEqual(addr, "c0a8:1::")
 
     def test_negative_ints_rejected(self):
@@ -174,7 +174,7 @@ class CommonTestMixin_v6(CommonTestMixin):
 
     def test_bad_packed_length(self):
         def assertBadLength(length):
-            addr = b'0' * length
+            addr = b'\0' * length
             msg = "%r (len %d != 16) is not permitted as an IPv6 address"
             with self.assertAddressError(re.escape(msg % (addr, length))):
                 self.factory(addr)
@@ -523,7 +523,7 @@ class NetworkTestCase_v4(BaseTestCase, NetmaskTestMixin_v4):
                 self.factory('10.0.1.0/24')))
         # containee larger than container
         self.assertFalse(
-            self.factory('10.0.0.0/24').subnet_of(
+            self.factory('10.0.1.0/24').subnet_of(
                 self.factory('10.0.0.0/30')))
 
     def test_supernet_of(self):
@@ -543,6 +543,20 @@ class NetworkTestCase_v4(BaseTestCase, NetmaskTestMixin_v4):
         self.assertTrue(
             self.factory('10.0.0.0/24').supernet_of(
                 self.factory('10.0.0.0/30')))
+
+    def test_subnet_of_mixed_types(self):
+        with self.assertRaises(TypeError):
+            ipaddress.IPv4Network('10.0.0.0/30').supernet_of(
+                ipaddress.IPv6Network('::1/128'))
+        with self.assertRaises(TypeError):
+            ipaddress.IPv6Network('::1/128').supernet_of(
+                ipaddress.IPv4Network('10.0.0.0/30'))
+        with self.assertRaises(TypeError):
+            ipaddress.IPv4Network('10.0.0.0/30').subnet_of(
+                ipaddress.IPv6Network('::1/128'))
+        with self.assertRaises(TypeError):
+            ipaddress.IPv6Network('::1/128').subnet_of(
+                ipaddress.IPv4Network('10.0.0.0/30'))
 
 
 class NetmaskTestMixin_v6(CommonTestMixin_v6):
@@ -1543,14 +1557,35 @@ class IpaddrUnitTest(unittest.TestCase):
                         ipaddress.ip_address('::2'))
 
     def testInterfaceComparison(self):
-        self.assertTrue(ipaddress.ip_interface('1.1.1.1') <=
-                        ipaddress.ip_interface('1.1.1.1'))
-        self.assertTrue(ipaddress.ip_interface('1.1.1.1') <=
-                        ipaddress.ip_interface('1.1.1.2'))
-        self.assertTrue(ipaddress.ip_interface('::1') <=
-                        ipaddress.ip_interface('::1'))
-        self.assertTrue(ipaddress.ip_interface('::1') <=
-                        ipaddress.ip_interface('::2'))
+        self.assertTrue(ipaddress.ip_interface('1.1.1.1/24') ==
+                        ipaddress.ip_interface('1.1.1.1/24'))
+        self.assertTrue(ipaddress.ip_interface('1.1.1.1/16') <
+                        ipaddress.ip_interface('1.1.1.1/24'))
+        self.assertTrue(ipaddress.ip_interface('1.1.1.1/24') <
+                        ipaddress.ip_interface('1.1.1.2/24'))
+        self.assertTrue(ipaddress.ip_interface('1.1.1.2/16') <
+                        ipaddress.ip_interface('1.1.1.1/24'))
+        self.assertTrue(ipaddress.ip_interface('1.1.1.1/24') >
+                        ipaddress.ip_interface('1.1.1.1/16'))
+        self.assertTrue(ipaddress.ip_interface('1.1.1.2/24') >
+                        ipaddress.ip_interface('1.1.1.1/24'))
+        self.assertTrue(ipaddress.ip_interface('1.1.1.1/24') >
+                        ipaddress.ip_interface('1.1.1.2/16'))
+
+        self.assertTrue(ipaddress.ip_interface('::1/64') ==
+                        ipaddress.ip_interface('::1/64'))
+        self.assertTrue(ipaddress.ip_interface('::1/64') <
+                        ipaddress.ip_interface('::1/80'))
+        self.assertTrue(ipaddress.ip_interface('::1/64') <
+                        ipaddress.ip_interface('::2/64'))
+        self.assertTrue(ipaddress.ip_interface('::2/48') <
+                        ipaddress.ip_interface('::1/64'))
+        self.assertTrue(ipaddress.ip_interface('::1/80') >
+                        ipaddress.ip_interface('::1/64'))
+        self.assertTrue(ipaddress.ip_interface('::2/64') >
+                        ipaddress.ip_interface('::1/64'))
+        self.assertTrue(ipaddress.ip_interface('::1/64') >
+                        ipaddress.ip_interface('::2/48'))
 
     def testNetworkComparison(self):
         # ip1 and ip2 have the same network address
