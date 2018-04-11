@@ -545,18 +545,26 @@ class NetworkTestCase_v4(BaseTestCase, NetmaskTestMixin_v4):
                 self.factory('10.0.0.0/30')))
 
     def test_subnet_of_mixed_types(self):
-        with self.assertRaises(TypeError):
-            ipaddress.IPv4Network('10.0.0.0/30').supernet_of(
-                ipaddress.IPv6Network('::1/128'))
-        with self.assertRaises(TypeError):
-            ipaddress.IPv6Network('::1/128').supernet_of(
-                ipaddress.IPv4Network('10.0.0.0/30'))
-        with self.assertRaises(TypeError):
-            ipaddress.IPv4Network('10.0.0.0/30').subnet_of(
-                ipaddress.IPv6Network('::1/128'))
-        with self.assertRaises(TypeError):
-            ipaddress.IPv6Network('::1/128').subnet_of(
-                ipaddress.IPv4Network('10.0.0.0/30'))
+        self.assertRaises(
+            TypeError,
+            ipaddress.IPv4Network('10.0.0.0/30').supernet_of,
+            ipaddress.IPv6Network('::1/128'),
+        )
+        self.assertRaises(
+            TypeError,
+            ipaddress.IPv6Network('::1/128').subnet_of,
+            ipaddress.IPv4Network('10.0.0.0/30'),
+        )
+        self.assertRaises(
+            TypeError,
+            ipaddress.IPv4Network('10.0.0.0/30').subnet_of,
+            ipaddress.IPv6Network('::1/128'),
+        )
+        self.assertRaises(
+            TypeError,
+            ipaddress.IPv6Network('::1/128').subnet_of,
+            ipaddress.IPv4Network('10.0.0.0/30'),
+        )
 
 
 class NetmaskTestMixin_v6(CommonTestMixin_v6):
