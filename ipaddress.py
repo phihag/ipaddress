@@ -14,7 +14,7 @@ from __future__ import unicode_literals
 import itertools
 import struct
 
-__version__ = '1.0.20'
+__version__ = '1.0.21'
 
 # Compatibility functions
 _compat_int_types = (int,)
