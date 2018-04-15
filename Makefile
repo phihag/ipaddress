@@ -17,6 +17,7 @@ release:
 	git add ipaddress.py setup.py
 	git commit -m "release ${VERSION}"
 	git tag "v${VERSION}"
+	git push
 	git push --tags
 	$(MAKE) pypi
 
