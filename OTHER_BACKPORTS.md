@@ -3,7 +3,7 @@ There are three backports of ipaddress in the wild:
 phihag/ipaddress ([ipaddress on PyPi](https://pypi.org/project/ipaddress/)):
 > First commit:  2013-02-03<br>
 > First release: 2013-02-04<br>
-> Latest commit: 2017-01-11
+> Latest commit: 2018-06-10 (as of June 2018)
 
 kwi/py2-ipaddress ([py2-ipaddress on PyPi](https://pypi.org/project/py2-ipaddress/))
 > First commit:  2013-08-08<br>
