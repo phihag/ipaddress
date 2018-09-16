@@ -1,16 +1,16 @@
 There are three backports of ipaddress in the wild:
 
-phihag/ipaddress ([ipaddress on PyPi](https://pypi.org/project/ipaddress/)):
+phihag/ipaddress ([ipaddress on PyPI](https://pypi.org/project/ipaddress/)):
 > First commit:  2013-02-03<br>
 > First release: 2013-02-04<br>
 > Latest commit: 2018-06-10 (as of June 2018)
 
-kwi/py2-ipaddress ([py2-ipaddress on PyPi](https://pypi.org/project/py2-ipaddress/))
+kwi/py2-ipaddress ([py2-ipaddress on PyPI](https://pypi.org/project/py2-ipaddress/))
 > First commit:  2013-08-08<br>
 > First release: 2013-08-08<br>
 > Latest commit: 2015-07-14
 
-sk-/backport_ipaddress ([backport_ipaddress on PyPi](https://pypi.org/project/backport_ipaddress/))
+sk-/backport_ipaddress ([backport_ipaddress on PyPI](https://pypi.org/project/backport_ipaddress/))
 > First commit:  2014-08-15<br>
 > First release: 2014-09-01<br>
 > Latest commit: 2014-08-16 (!)
