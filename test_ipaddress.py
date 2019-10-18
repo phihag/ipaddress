@@ -2232,5 +2232,6 @@ class SingleIssuesTest(BaseTestCase):
         with self.assertRaisesRegex(TypeError, r'are not of the same version'):
             v6net.subnet_of(v4net)
 
+
 if __name__ == '__main__':
     unittest.main()
