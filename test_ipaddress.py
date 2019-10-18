@@ -862,9 +862,9 @@ class IpaddrUnitTest(unittest.TestCase):
         self.ipv6_network = ipaddress.IPv6Network('2001:658:22a:cafe::/64')
 
     def testRepr(self):
-        self.assertTrue(re.match("IPv4Interface\(u?'1.2.3.4/32'\)",
+        self.assertTrue(re.match(r"IPv4Interface\(u?'1.2.3.4/32'\)",
                         repr(ipaddress.IPv4Interface('1.2.3.4'))))
-        self.assertTrue(re.match("IPv6Interface\(u?'::1/128'\)",
+        self.assertTrue(re.match(r"IPv6Interface\(u?'::1/128'\)",
                         repr(ipaddress.IPv6Interface('::1'))))
 
     # issue #16531: constructing IPv4Network from an (address, mask) tuple
@@ -1014,7 +1014,8 @@ class IpaddrUnitTest(unittest.TestCase):
                          [(ip1, ip3)])
         self.assertEqual(128, ipaddress._count_righthand_zero_bits(0, 128))
         self.assertTrue(
-            re.match("IPv4Network\(u?'1.2.3.0/24'\)", repr(self.ipv4_network)))
+            re.match(r"IPv4Network\(u?'1.2.3.0/24'\)",
+                     repr(self.ipv4_network)))
 
     def testMissingAddressVersion(self):
         class Broken(ipaddress._BaseAddress):
