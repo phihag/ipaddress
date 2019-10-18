@@ -21,8 +21,22 @@ release:
 	git push --tags
 	$(MAKE) pypi
 
+docker-test-all: docker-test-2.6 docker-test-2.7 docker-test-3.2 docker-test-3.3
+
+docker-test-2.6:
+	docker build -t ipaddress-python2.6 . -f test-python2.6.Dockerfile
+
+docker-test-2.7:
+	docker build -t ipaddress-python2.7 . -f test-python2.7.Dockerfile
+
+docker-test-3.2:
+	docker build -t ipaddress-python3.2 . -f test-python3.2.Dockerfile
+
+docker-test-3.3:
+	docker build -t ipaddress-python3.3 . -f test-python3.3.Dockerfile
+
 clean:
 	rm -rf -- build dist ipaddress.egg-info
 
-.PHONY: default test clean pypi lint
+.PHONY: default test clean pypi lint docker-test-all docker-test-2.6 docker-test-2.7 docker-test-3.2 docker-test-3.3
 
