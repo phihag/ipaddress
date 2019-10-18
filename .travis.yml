@@ -8,10 +8,10 @@ python:
   - "pypy"
   - "pypy3"
 install: 
-  - "pip install flake8"
+  - "if python --version 2>&1 | grep -q ' 2\.7\.'; then pip install flake8 ; fi"
 script:
   - "make test"
-  - "make lint"
+  - "make lint-if-2.7"
 notifications:
   email:
     - phihag@phihag.de

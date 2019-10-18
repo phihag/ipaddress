@@ -4,7 +4,10 @@ test:
 	python test_ipaddress.py
 
 lint:
-	@(python --version 2>&1 | grep -q ' 2\.6\.') || flake8 ipaddress.py test_ipaddress.py
+	flake8 *.py
+
+lint-if-2.7:
+	@if python --version 2>&1 | grep -q ' 2\.7\.'; then $(MAKE) lint ; fi
 
 pypi:
 	python setup.py sdist bdist_wheel upload
@@ -38,5 +41,5 @@ docker-test-3.3:
 clean:
 	rm -rf -- build dist ipaddress.egg-info
 
-.PHONY: default test clean pypi lint docker-test-all docker-test-2.6 docker-test-2.7 docker-test-3.2 docker-test-3.3
+.PHONY: default test clean pypi lint docker-test-all docker-test-2.6 docker-test-2.7 docker-test-3.2 docker-test-3.3 lint-if-2.7
 
