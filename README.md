@@ -3,7 +3,7 @@ ipaddress
 
 Python 3.3+'s [ipaddress](http://docs.python.org/dev/library/ipaddress) for Python 2.6, 2.7, 3.2.
 
-Note that as in Python 3.3+ you must use character strings and not byte strings for textual IP address representations:
+Note that just like in Python 3.3+ you must use character strings and not byte strings for textual IP address representations:
 
 ```python
 >>> from __future__ import unicode_literals
