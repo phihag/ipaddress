@@ -2161,7 +2161,7 @@ if not hasattr(BaseTestCase, 'assertRaisesRegex'):
 
             expected_regex = self.expected_regex
             if not expected_regex.search(str(exc_value)):
-                raise AssertionError('"{}" does not match "{}"'.format(
+                raise AssertionError('"{0}" does not match "{1}"'.format(
                     expected_regex.pattern, str(exc_value)))
             return True
 
@@ -2212,7 +2212,7 @@ class CompatTest(unittest.TestCase):
         self.assertEqual(ipaddress._compat_bit_length(4), 3)
 
 
-class SingleIssuesTest(unittest.TestCase):
+class SingleIssuesTest(BaseTestCase):
     # https://github.com/phihag/ipaddress/issues/14
     def test_issue_14(self):
         self.assertTrue(ipaddress.ip_address('127.0.0.1').is_private)
@@ -2225,6 +2225,11 @@ class SingleIssuesTest(unittest.TestCase):
         self.assertTrue(net2.subnet_of(net1))
         self.assertFalse(net2.supernet_of(net1))
 
+    def test_issue_48(self):
+        v6net = ipaddress.ip_network('::/0')
+        v4net = ipaddress.ip_network('1.2.3.0/24')
+        with self.assertRaisesRegex(TypeError, r'are not of the same version'):
+            v6net.subnet_of(v4net)
 
 if __name__ == '__main__':
     unittest.main()
