@@ -112,6 +112,8 @@ class CommonTestMixin_v4(CommonTestMixin):
     def test_leading_zeros(self):
         self.assertInstancesEqual("000.000.000.000", "0.0.0.0")
         self.assertInstancesEqual("192.168.000.001", "192.168.0.1")
+        self.assertInstancesEqual("016.016.016.016", "16.16.16.16")
+        self.assertInstancesEqual("001.000.008.016", "1.0.8.16")
 
     def test_int(self):
         self.assertInstancesEqual(0, "0.0.0.0")
@@ -245,15 +247,6 @@ class AddressTestCase_v4(BaseTestCase, CommonTestMixin_v4):
         assertBadOctet("1.2.3.4e0", "4e0")
         assertBadOctet("1.2.3.4::", "4::")
         assertBadOctet("1.a.2.3", "a")
-
-    def test_octal_decimal_ambiguity(self):
-        def assertBadOctet(addr, octet):
-            msg = "Ambiguous (octal/decimal) value in %r not permitted in %r"
-            with self.assertAddressError(re.escape(msg % (octet, addr))):
-                ipaddress.IPv4Address(addr)
-
-        assertBadOctet("016.016.016.016", "016")
-        assertBadOctet("001.000.008.016", "008")
 
     def test_octet_length(self):
         def assertBadOctet(addr, octet):
@@ -433,6 +426,15 @@ class AddressTestCase_v6(BaseTestCase, CommonTestMixin_v6):
 class NetmaskTestMixin_v4(CommonTestMixin_v4):
     """Input validation on interfaces and networks is very similar"""
 
+    def test_no_mask(self):
+        for address in ('1.2.3.4', 0x01020304, b'\x01\x02\x03\x04'):
+            net = self.factory(address)
+            self.assertEqual(_compat_str(net), '1.2.3.4/32')
+            self.assertEqual(_compat_str(net.netmask), '255.255.255.255')
+            self.assertEqual(_compat_str(net.hostmask), '0.0.0.0')
+            # IPv4Network has prefixlen, but IPv4Interface doesn't.
+            # Should we add it to IPv4Interface too? (bpo-36392)
+
     def test_split_netmask(self):
         addr = "1.2.3.4/32/24"
         with self.assertAddressError("Only one '/' permitted in %r" % addr):
@@ -494,6 +496,14 @@ class NetmaskTestMixin_v4(CommonTestMixin_v4):
         assertBadNetmask("1.1.1.1", "0.1.127.255")
         assertBadNetmask("1.1.1.1", "pudding")
         assertBadNetmask("1.1.1.1", "::")
+
+    def test_netmask_in_tuple_errors(self):
+        def assertBadNetmask(addr, netmask):
+            msg = "%r is not a valid netmask" % netmask
+            with self.assertNetmaskError(re.escape(msg)):
+                self.factory((addr, netmask))
+        assertBadNetmask("1.1.1.1", -1)
+        assertBadNetmask("1.1.1.1", 33)
 
     def test_pickle(self):
         self.pickle_test('192.0.2.0/27')
@@ -570,6 +580,18 @@ class NetworkTestCase_v4(BaseTestCase, NetmaskTestMixin_v4):
 class NetmaskTestMixin_v6(CommonTestMixin_v6):
     """Input validation on interfaces and networks is very similar"""
 
+    def test_no_mask(self):
+        for address in ('::1', 1, b'\x00'*15 + b'\x01'):
+            net = self.factory(address)
+            self.assertEqual(_compat_str(net), '::1/128')
+            self.assertEqual(
+                _compat_str(net.netmask),
+                'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff'
+            )
+            self.assertEqual(_compat_str(net.hostmask), '::')
+            # IPv6Network has prefixlen, but IPv6Interface doesn't.
+            # Should we add it to IPv4Interface too? (bpo-36392)
+
     def test_split_netmask(self):
         addr = "cafe:cafe::/128/190"
         with self.assertAddressError("Only one '/' permitted in %r" % addr):
@@ -617,6 +639,14 @@ class NetmaskTestMixin_v6(CommonTestMixin_v6):
         assertBadNetmask("::1", "1.2.3.4")
         assertBadNetmask("::1", "pudding")
         assertBadNetmask("::", "::")
+
+    def test_netmask_in_tuple_errors(self):
+        def assertBadNetmask(addr, netmask):
+            msg = "%r is not a valid netmask" % netmask
+            with self.assertNetmaskError(re.escape(msg)):
+                self.factory((addr, netmask))
+        assertBadNetmask("::1", -1)
+        assertBadNetmask("::1", 129)
 
     def test_pickle(self):
         self.pickle_test('2001:db8::1000/124')
@@ -1190,10 +1220,34 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEqual(ipaddress.IPv4Address('1.2.3.1'), hosts[0])
         self.assertEqual(ipaddress.IPv4Address('1.2.3.254'), hosts[-1])
 
+        ipv6_network = ipaddress.IPv6Network('2001:658:22a:cafe::/120')
+        hosts = list(ipv6_network.hosts())
+        self.assertEqual(255, len(hosts))
+        self.assertEqual(
+            ipaddress.IPv6Address('2001:658:22a:cafe::1'), hosts[0]
+        )
+        self.assertEqual(
+            ipaddress.IPv6Address('2001:658:22a:cafe::ff'), hosts[-1]
+        )
+
         # special case where only 1 bit is left for address
-        self.assertEqual([ipaddress.IPv4Address('2.0.0.0'),
-                          ipaddress.IPv4Address('2.0.0.1')],
-                         list(ipaddress.ip_network('2.0.0.0/31').hosts()))
+        addrs = [ipaddress.IPv4Address('2.0.0.0'),
+                 ipaddress.IPv4Address('2.0.0.1')]
+        str_args = '2.0.0.0/31'
+        tpl_args = ('2.0.0.0', 31)
+        self.assertEqual(addrs, list(ipaddress.ip_network(str_args).hosts()))
+        self.assertEqual(addrs, list(ipaddress.ip_network(tpl_args).hosts()))
+        self.assertEqual(list(ipaddress.ip_network(str_args).hosts()),
+                         list(ipaddress.ip_network(tpl_args).hosts()))
+
+        addrs = [ipaddress.IPv6Address('2001:658:22a:cafe::'),
+                 ipaddress.IPv6Address('2001:658:22a:cafe::1')]
+        str_args = '2001:658:22a:cafe::/127'
+        tpl_args = ('2001:658:22a:cafe::', 127)
+        self.assertEqual(addrs, list(ipaddress.ip_network(str_args).hosts()))
+        self.assertEqual(addrs, list(ipaddress.ip_network(tpl_args).hosts()))
+        self.assertEqual(list(ipaddress.ip_network(str_args).hosts()),
+                         list(ipaddress.ip_network(tpl_args).hosts()))
 
     def testFancySubnetting(self):
         self.assertEqual(sorted(self.ipv4_network.subnets(prefixlen_diff=3)),
@@ -2130,6 +2184,18 @@ class IpaddrUnitTest(unittest.TestCase):
         self.assertEqual(ipaddress.IPv4Address('172.29.45.100'),
                          sixtofouraddr.sixtofour)
         self.assertFalse(bad_addr.sixtofour)
+
+    # issue41004 Hash collisions in IPv4Interface and IPv6Interface
+    def testV4HashIsNotConstant(self):
+        ipv4_address1 = ipaddress.IPv4Interface("1.2.3.4")
+        ipv4_address2 = ipaddress.IPv4Interface("2.3.4.5")
+        self.assertNotEqual(ipv4_address1.__hash__(), ipv4_address2.__hash__())
+
+    # issue41004 Hash collisions in IPv4Interface and IPv6Interface
+    def testV6HashIsNotConstant(self):
+        ipv6_address1 = ipaddress.IPv6Interface("2001:658:22a:cafe:200:0:0:1")
+        ipv6_address2 = ipaddress.IPv6Interface("2001:658:22a:cafe:200:0:0:2")
+        self.assertNotEqual(ipv6_address1.__hash__(), ipv6_address2.__hash__())
 
 
 # Monkey-patch test runner
