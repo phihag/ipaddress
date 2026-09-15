@@ -36,8 +36,8 @@ else:
 try:
     _compat_int_from_byte_vals = int.from_bytes
 except AttributeError:
-    def _compat_int_from_byte_vals(bytvals, endianess):
-        assert endianess == 'big'
+    def _compat_int_from_byte_vals(bytvals, endianness):
+        assert endianness == 'big'
         res = 0
         for bv in bytvals:
             assert isinstance(bv, _compat_int_types)
@@ -45,9 +45,9 @@ except AttributeError:
         return res
 
 
-def _compat_to_bytes(intval, length, endianess):
+def _compat_to_bytes(intval, length, endianness):
     assert isinstance(intval, _compat_int_types)
-    assert endianess == 'big'
+    assert endianness == 'big'
     if length == 4:
         if intval < 0 or intval >= 2 ** 32:
             raise struct.error("integer out of range for 'I' format code")
@@ -175,6 +175,8 @@ def ip_network(address, strict=True):
         address: A string or integer, the IP network.  Either IPv4 or
           IPv6 networks may be supplied; integers less than 2**32 will
           be considered to be IPv4 by default.
+        strict: A boolean.  If true (the default), a ValueError is
+          raised if host bits are set in the supplied network address.
 
     Returns:
         An IPv4Network or IPv6Network object.
@@ -336,7 +338,7 @@ def summarize_address_range(first, last):
     Returns:
         An iterator of the summarized IPv(4|6) network objects.
 
-    Raise:
+    Raises:
         TypeError:
             If the first and last objects are not IP addresses.
             If the first and last objects are not the same version.
@@ -375,7 +377,7 @@ def summarize_address_range(first, last):
 
 
 def _collapse_addresses_internal(addresses):
-    """Loops through the addresses, collapsing concurrent netblocks.
+    """Loops through the addresses, collapsing consecutive netblocks.
 
     Example:
 
@@ -531,7 +533,7 @@ class _IPAddressBase(_TotalOrderingMixin):
 
     @property
     def version(self):
-        msg = '%200s has no version specified' % (type(self),)
+        msg = '%s has no version specified' % (type(self),)
         raise NotImplementedError(msg)
 
     def _check_int_address(self, address):
@@ -853,7 +855,7 @@ class _BaseNetwork(_IPAddressBase):
         # Returning bare address objects (rather than interfaces) allows for
         # more consistent behaviour across the network address, broadcast
         # address and individual host addresses.
-        msg = '%200s has no associated address class' % (type(self),)
+        msg = '%s has no associated address class' % (type(self),)
         raise NotImplementedError(msg)
 
     @property
@@ -867,16 +869,16 @@ class _BaseNetwork(_IPAddressBase):
 
             addr1 = ip_network('192.0.2.0/28')
             addr2 = ip_network('192.0.2.1/32')
-            list(addr1.address_exclude(addr2)) =
+            sorted(addr1.address_exclude(addr2)) =
                 [IPv4Network('192.0.2.0/32'), IPv4Network('192.0.2.2/31'),
                  IPv4Network('192.0.2.4/30'), IPv4Network('192.0.2.8/29')]
 
         or IPv6:
 
-            addr1 = ip_network('2001:db8::1/32')
+            addr1 = ip_network('2001:db8::/32')
             addr2 = ip_network('2001:db8::1/128')
-            list(addr1.address_exclude(addr2)) =
-                [ip_network('2001:db8::1/128'),
+            sorted(addr1.address_exclude(addr2)) =
+                [ip_network('2001:db8::/128'),
                  ip_network('2001:db8::2/127'),
                  ip_network('2001:db8::4/126'),
                  ip_network('2001:db8::8/125'),
@@ -1056,7 +1058,7 @@ class _BaseNetwork(_IPAddressBase):
               /21 netmask is returned.
 
         Returns:
-            An IPv4 network object.
+            An IPv4 or IPv6 network object.
 
         Raises:
             ValueError: If self.prefixlen - prefixlen_diff < 0. I.e., you have
@@ -1125,7 +1127,7 @@ class _BaseNetwork(_IPAddressBase):
 
         Returns:
             A boolean, True if the address is within one of the
-            reserved IPv6 Network ranges.
+            reserved IPv4 or IPv6 Network ranges.
 
         """
         return (self.network_address.is_reserved and
@@ -1410,9 +1412,9 @@ class IPv4Address(_BaseV4, _BaseAddress):
     def is_reserved(self):
         """Test if the address is otherwise IETF reserved.
 
-         Returns:
-             A boolean, True if the address is within the
-             reserved IPv4 Network range.
+        Returns:
+            A boolean, True if the address is within the
+            reserved IPv4 Network range.
 
         """
         return self in self._constants._reserved_network
@@ -1562,12 +1564,12 @@ class IPv4Interface(IPv4Address):
 
 class IPv4Network(_BaseV4, _BaseNetwork):
 
-    """This class represents and manipulates 32-bit IPv4 network + addresses..
+    """This class represents and manipulates 32-bit IPv4 network + addresses.
 
     Attributes: [examples for IPv4Network('192.0.2.0/27')]
         .network_address: IPv4Address('192.0.2.0')
         .hostmask: IPv4Address('0.0.0.31')
-        .broadcast_address: IPv4Address('192.0.2.32')
+        .broadcast_address: IPv4Address('192.0.2.31')
         .netmask: IPv4Address('255.255.255.224')
         .prefixlen: 27
 
@@ -1583,7 +1585,7 @@ class IPv4Network(_BaseV4, _BaseNetwork):
             address: A string or integer representing the IP [& network].
               '192.0.2.0/24'
               '192.0.2.0/255.255.255.0'
-              '192.0.0.2/0.0.0.255'
+              '192.0.2.0/0.0.0.255'
               are all functionally the same in IPv4. Similarly,
               '192.0.2.1'
               '192.0.2.1/255.255.255.255'
@@ -1601,8 +1603,8 @@ class IPv4Network(_BaseV4, _BaseNetwork):
               Additionally, an integer can be passed, so
               IPv4Network('192.0.2.1') == IPv4Network(3221225985)
               or, more generally
-              IPv4Interface(int(IPv4Interface('192.0.2.1'))) ==
-                IPv4Interface('192.0.2.1')
+              IPv4Network(int(IPv4Address('192.0.2.1'))) ==
+                IPv4Network('192.0.2.1')
 
         Raises:
             AddressValueError: If ipaddress isn't a valid IPv4 address.
@@ -1735,8 +1737,7 @@ class _BaseV6(object):
 
         Argument can be:
         - an integer (the prefix length)
-        - a string representing the prefix length (e.g. "24")
-        - a string representing the prefix netmask (e.g. "255.255.255.0")
+        - a string representing the prefix length (e.g. "64")
         """
         if arg not in cls._netmask_cache:
             if isinstance(arg, _compat_int_types):
@@ -1954,9 +1955,6 @@ class _BaseV6(object):
 
     def _explode_shorthand_ip_string(self):
         """Expand a shortened IPv6 address.
-
-        Args:
-            ip_str: A string, the IPv6 address.
 
         Returns:
             A string, the expanded IPv6 address.
@@ -2265,7 +2263,7 @@ class IPv6Network(_BaseV6, _BaseNetwork):
 
     """This class represents and manipulates 128-bit IPv6 networks.
 
-    Attributes: [examples for IPv6('2001:db8::1000/124')]
+    Attributes: [examples for IPv6Network('2001:db8::1000/124')]
         .network_address: IPv6Address('2001:db8::1000')
         .hostmask: IPv6Address('::f')
         .broadcast_address: IPv6Address('2001:db8::100f')

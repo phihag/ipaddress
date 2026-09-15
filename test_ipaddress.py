@@ -178,7 +178,6 @@ class CommonTestMixin_v6(CommonTestMixin):
             msg = "%r (len %d != 16) is not permitted as an IPv6 address"
             with self.assertAddressError(re.escape(msg % (addr, length))):
                 self.factory(addr)
-                self.factory(addr)
 
         assertBadLength(15)
         assertBadLength(17)
@@ -1438,7 +1437,7 @@ class IpaddrUnitTest(unittest.TestCase):
         ip2 = ipaddress.IPv4Address('1.1.1.1')
         ip3 = ipaddress.IPv4Address('1.1.1.2')
         ip4 = ipaddress.IPv4Address('1.1.1.3')
-        # check that addreses are subsumed properly.
+        # check that addresses are subsumed properly.
         collapsed = ipaddress.collapse_addresses([ip1, ip2, ip3, ip4])
         self.assertEqual(list(collapsed),
                          [ipaddress.IPv4Network('1.1.1.0/30')])
@@ -1453,7 +1452,7 @@ class IpaddrUnitTest(unittest.TestCase):
         # [].sort
         ip6 = ipaddress.IPv4Network('1.1.0.0/22')
 
-        # check that addreses are subsumed properly.
+        # check that addresses are subsumed properly.
         collapsed = ipaddress.collapse_addresses(
             [ip1, ip2, ip3, ip4, ip5, ip6])
 
