@@ -2232,6 +2232,22 @@ class SingleIssuesTest(BaseTestCase):
         with self.assertRaisesRegex(TypeError, r'are not of the same version'):
             v6net.subnet_of(v4net)
 
+    # https://github.com/phihag/ipaddress/issues/55 (CVE-2020-14422)
+    def test_issue_55_interface_hash_collisions(self):
+        # With the default prefix length, _ip == network_address, so the
+        # old XOR based hash was the constant 32 (or 128) for every host.
+        v4 = set(hash(ipaddress.IPv4Interface('10.0.0.%d' % i))
+                 for i in range(1, 101))
+        v6 = set(hash(ipaddress.IPv6Interface('2001:db8::%x' % i))
+                 for i in range(1, 101))
+        self.assertGreater(len(v4), 90)
+        self.assertGreater(len(v6), 90)
+        self.assertNotEqual(hash(ipaddress.IPv4Interface('1.2.3.4')),
+                            hash(ipaddress.IPv4Interface('2.3.4.5')))
+        self.assertNotEqual(
+            hash(ipaddress.IPv6Interface('2001:658:22a:cafe:200::1')),
+            hash(ipaddress.IPv6Interface('2001:658:22a:cafe:200::2')))
+
 
 if __name__ == '__main__':
     unittest.main()
